@@ -157,9 +157,11 @@ export function focusFieldAction<Fields extends FormFields = FormFields>(
   }
   return {
     ...formState,
+    isActive: true,
+    visited: true,
     fields: {
       ...fields,
-      [name]: { ...fields[name], isActive: true },
+      [name]: { ...fields[name], isActive: true, visited: true },
     },
   };
 }
@@ -211,6 +213,7 @@ export function blurFieldAction<Fields extends FormFields = FormFields>(
   }
   return {
     ...formState,
+    isActive: false,
     fields: {
       ...fields,
       [name]: { ...fields[name], isActive: false },

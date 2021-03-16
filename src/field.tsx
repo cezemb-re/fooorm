@@ -6,9 +6,8 @@ import {
   FieldValidationFunction,
 } from './state';
 
-export interface FieldComponentProps {
-  formState: FormState;
-  field: FieldState;
+export interface FieldComponentProps extends FieldState {
+  form: FormState;
   onFocus: () => void;
   onChange: (eventOrValue: any) => void;
   onBlur: () => void;
@@ -73,12 +72,12 @@ function Field({
     return null;
   }
 
-  return React.createElement(
+  return React.createElement<FieldComponentProps>(
     component || 'input',
     {
       ...customProps,
-      formState,
-      field: formState.fields[name],
+      ...formState.fields[name],
+      form: formState,
       onFocus,
       onChange,
       onBlur,

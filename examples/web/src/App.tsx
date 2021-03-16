@@ -77,6 +77,9 @@ function App(): React.ReactElement {
       <h6>Form state</h6>
       <p>isSubmitting: {formState.isSubmitting.toString()}</p>
       <p>isTouched: {formState.isTouched.toString()}</p>
+      <p>isTouched: {formState.isTouched.toString()}</p>
+      <p>isActive: {formState.isActive.toString()}</p>
+      <p>visited: {formState.visited.toString()}</p>
       <p>submitSucceeded: {formState.submitSucceeded.toString()}</p>
       <p>submitFailed: {formState.submitFailed.toString()}</p>
       <p>Submit error: {formState.submitErrors._global?.toString()}</p>

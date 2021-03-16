@@ -13,6 +13,7 @@ export interface FieldState<Value = any> {
   isTouched: boolean;
   isValid: boolean;
   isActive: boolean;
+  visited: boolean;
   error: string | null;
   submitError: string | null;
   warning: string | null;
@@ -25,6 +26,7 @@ export const defaultFieldState: FieldState = {
   isTouched: false,
   isValid: true,
   isActive: false,
+  visited: false,
   error: null,
   submitError: null,
   warning: null,
@@ -61,6 +63,8 @@ export interface FormState<Fields extends FormFields = FormFields> {
   nbFields: number;
   isTouched: boolean;
   isValid: boolean;
+  isActive: boolean;
+  visited: boolean;
   isSubmitting: boolean;
   submitSucceeded: boolean;
   submitFailed: boolean;
@@ -82,6 +86,8 @@ export const defaultFormState: FormState = {
   isSubmitting: false,
   submitSucceeded: false,
   submitFailed: false,
+  isActive: false,
+  visited: false,
   submitCounter: 0,
   values: {},
   fields: {},

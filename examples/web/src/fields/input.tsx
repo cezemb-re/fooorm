@@ -6,7 +6,15 @@ export interface Props {
 }
 
 function Input({
-  field,
+  error,
+  warning,
+  submitError,
+  value,
+  isValid,
+  isActive,
+  visited,
+  isTouched,
+  name,
   onFocus,
   onChange,
   onBlur,
@@ -14,21 +22,22 @@ function Input({
 }: FieldComponentProps & Props): React.ReactElement {
   return (
     <div>
-      <label htmlFor={field.name}>{field.name}</label>
+      <label htmlFor={name}>{name}</label>
       <input
         type="text"
-        value={field.value}
+        value={value}
         onFocus={onFocus}
         onChange={onChange}
         onBlur={onBlur}
       />
-      {field.error ? <p>ERROR: {field.error}</p> : null}
-      {field.warning ? <p>WARNING: {field.warning}</p> : null}
-      {field.submitError ? <p>SUBMIT ERROR: {field.submitError}</p> : null}
-      <p>value: {field.value}</p>
-      <p>isTouched: {field.isTouched.toString()}</p>
-      <p>isActive: {field.isActive.toString()}</p>
-      <p>isValid: {field.isValid.toString()}</p>
+      <p>ERROR: {error}</p>
+      <p>WARNING: {warning}</p>
+      <p>SUBMIT ERROR: {submitError}</p>
+      <p>value: {value}</p>
+      <p>isTouched: {isTouched.toString()}</p>
+      <p>isActive: {isActive.toString()}</p>
+      <p>visited: {visited.toString()}</p>
+      <p>isValid: {isValid.toString()}</p>
       <p>{otherProp}</p>
     </div>
   );
