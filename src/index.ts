@@ -9,6 +9,7 @@ import formContext, {
   useFormContext,
   FormErrors,
   FormSubmitError,
+  isFormSubmitError,
 } from './state';
 import Form from './form';
 import Field, { FieldComponentProps } from './field';
@@ -21,6 +22,7 @@ export {
   defaultFieldState,
   defaultFormState,
   FormSubmitError,
+  isFormSubmitError,
 };
 
 export type {
@@ -41,4 +43,5 @@ export default {
   defaultFieldState,
   defaultFormState,
   FormSubmitError,
+  isFormSubmitError,
 };

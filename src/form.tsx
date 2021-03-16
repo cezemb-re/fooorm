@@ -49,36 +49,42 @@ function Form(
     (
       name: string,
       initialValue: any,
-      validate: FieldValidationFunction | undefined,
-      warn: FieldValidationFunction | undefined
+      validateField: FieldValidationFunction | undefined,
+      warnField: FieldValidationFunction | undefined
     ) =>
-      setFormState((formState) =>
-        mountFieldAction(formState, name, initialValue, validate, warn)
+      setFormState((_formState) =>
+        mountFieldAction(
+          _formState,
+          name,
+          initialValue,
+          validateField,
+          warnField
+        )
       ),
     []
   );
 
   const focusField = useCallback(
     (name: string) =>
-      setFormState((formState) => focusFieldAction(formState, name)),
+      setFormState((_formState) => focusFieldAction(_formState, name)),
     []
   );
 
   const changeField = useCallback(
     (name: string, value: any) =>
-      setFormState((formState) => changeFieldAction(formState, name, value)),
+      setFormState((_formState) => changeFieldAction(_formState, name, value)),
     []
   );
 
   const blurField = useCallback(
     (name: string) =>
-      setFormState((formState) => blurFieldAction(formState, name)),
+      setFormState((_formState) => blurFieldAction(_formState, name)),
     []
   );
 
   const resetField = useCallback(
     (name: string) =>
-      setFormState((formState) => resetFieldAction(formState, name)),
+      setFormState((_formState) => resetFieldAction(_formState, name)),
     []
   );
 
@@ -102,7 +108,7 @@ function Form(
       try {
         setFormState(await submitAction(formState));
       } catch (errors) {
-        setFormState((formState) => failSubmitAction(formState, errors));
+        setFormState((_formState) => failSubmitAction(_formState, errors));
       }
     },
     [formState]

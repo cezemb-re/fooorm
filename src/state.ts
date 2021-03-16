@@ -43,17 +43,30 @@ export type FormErrors<Fields extends FormFields = FormFields> = {
 export class FormSubmitError<
   Fields extends FormFields = FormFields
 > extends Error {
-  formErrors: FormErrors<Fields> | null;
+  __FLAG__: 'FormSubmitError';
+
+  submitErrors: FormErrors<Fields> | null;
 
   constructor(errors: string | FormErrors) {
     super(typeof errors === 'string' ? errors : 'Unknown error');
-    this.formErrors = typeof errors === 'string' ? { _global: errors } : errors;
+    this.submitErrors =
+      typeof errors === 'string' ? { _global: errors } : errors;
+    this.__FLAG__ = 'FormSubmitError';
   }
+}
+
+export function isFormSubmitError(error: any): boolean {
+  return !!(
+    error &&
+    '__FLAG__' in error &&
+    error.__FLAG__ &&
+    error.__FLAG__ === 'FormSubmitError'
+  );
 }
 
 export type FormValidationFunction<Fields extends FormFields = FormFields> = (
   values: Fields
-) => FormErrors<Fields>;
+) => FormErrors<Fields> | Error | string | null | void;
 
 export type FormSubmitFunction<Fields extends FormFields = FormFields> = (
   values: Fields
@@ -73,6 +86,9 @@ export interface FormState<Fields extends FormFields = FormFields> {
   fields: { [key in keyof Fields]: FieldState };
   errors: FormErrors<Fields>;
   submitErrors: FormErrors<Fields>;
+  error: string | null;
+  warning: string | null;
+  submitError: string | null;
   warnings: FormErrors<Fields>;
   onSubmit?: FormSubmitFunction<Fields>;
   validate?: FormValidationFunction<Fields>;
@@ -93,6 +109,9 @@ export const defaultFormState: FormState = {
   fields: {},
   errors: {},
   submitErrors: {},
+  error: null,
+  submitError: null,
+  warning: null,
   warnings: {},
 };
 

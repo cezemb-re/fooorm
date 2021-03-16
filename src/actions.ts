@@ -1,3 +1,4 @@
+import isEqual from 'lodash.isequal';
 import {
   FieldValidationFunction,
   FormValidationFunction,
@@ -7,7 +8,6 @@ import {
   FormErrors,
   FormSubmitError,
 } from './state';
-import isEqual from 'lodash.isequal';
 
 function parseError(error: Error | string): string {
   if (error instanceof Error) {
@@ -36,13 +36,22 @@ function validateField<Value = any>(
 
 function validateFormFields<Fields extends FormFields = FormFields>(
   values: Fields,
-  validate: FormValidationFunction | undefined
-): FormErrors {
-  if (!validate || typeof validate !== 'function') {
-    return {};
-  }
+  validate: FormValidationFunction<Fields>
+): FormErrors<Fields> {
   try {
-    return validate(values);
+    const errors = validate(values);
+
+    if (!errors) {
+      return {};
+    }
+    if (typeof errors === 'string') {
+      return { _global: errors };
+    }
+    if (errors instanceof Error) {
+      return { _global: errors.message };
+    }
+
+    return errors;
   } catch (error) {
     return { _global: parseError(error) };
   }
@@ -53,16 +62,20 @@ function validateForm<Fields extends FormFields = FormFields>(
   const nextState: FormState<Fields> = {
     ...formState,
     errors: {},
+    error: null,
     warnings: {},
+    warning: null,
     isValid: true,
   };
 
-  Object.keys(formState.fields).map((field: keyof Fields) => {
+  Object.keys(formState.fields).forEach((field: keyof Fields) => {
     if (formState.fields[field].error) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       nextState.errors[field] = formState.fields[field].error;
     }
     if (formState.fields[field].warning) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       nextState.warnings[field] = formState.fields[field].warning;
     }
@@ -71,19 +84,43 @@ function validateForm<Fields extends FormFields = FormFields>(
   if (formState.validate) {
     const errors = validateFormFields<Fields>(
       formState.values,
-      // @ts-ignore
       formState.validate
     );
-    Object.assign(nextState.errors, errors);
+
+    Object.keys(errors).forEach((field: keyof Fields) => {
+      if (field in errors && errors[field]) {
+        nextState.errors[field] = errors[field];
+
+        if (field === '_global' && errors._global) {
+          nextState.error = errors._global;
+        } else if (field in nextState.fields) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          nextState.fields[field].error = errors[field];
+        }
+      }
+    });
   }
 
   if (formState.warn) {
     const warnings = validateFormFields<Fields>(
       formState.values,
-      // @ts-ignore
       formState.warn
     );
-    Object.assign(nextState.warnings, warnings);
+
+    Object.keys(warnings).forEach((field: keyof Fields) => {
+      if (field in warnings && warnings[field]) {
+        nextState.warnings[field] = warnings[field];
+
+        if (field === '_global' && warnings._global) {
+          nextState.warning = warnings._global;
+        } else if (field in nextState.fields) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          nextState.fields[field].warning = warnings[field];
+        }
+      }
+    });
   }
 
   if (Object.keys(nextState.errors).length) {
@@ -104,7 +141,7 @@ export function mountFieldAction<
   warn: FieldValidationFunction | undefined
 ): FormState<Fields> {
   let value: Value;
-  let isTouched: boolean = false;
+  let isTouched = false;
 
   if (name in fields && isEqual(fields[name].initialValue, initialValue)) {
     value = fields[name].value;
@@ -284,7 +321,7 @@ export function resetFormAction<Fields extends FormFields = FormFields>(
     submitErrors: {},
   };
 
-  Object.keys(nextState.fields).map((name: keyof Fields) => {
+  Object.keys(nextState.fields).forEach((name: keyof Fields) => {
     nextState.fields[name] = {
       ...formState.fields[name],
       isTouched: false,
@@ -302,7 +339,7 @@ export function resetFormAction<Fields extends FormFields = FormFields>(
         formState.fields[name].validate
       );
       if (nextState.fields[name].error) {
-        formState.fields[name].isValid = false;
+        nextState.fields[name].isValid = false;
       }
     }
 
@@ -326,13 +363,14 @@ export function startSubmitAction<Fields extends FormFields = FormFields>({
   const nextState = {
     ...formState,
     submitErrors: {},
+    submitError: null,
     isSubmitting: true,
     submitSucceeded: false,
     submitFailed: false,
     submitCounter: submitCounter + 1,
   };
 
-  Object.keys(formState.fields).map((name: keyof Fields) => {
+  Object.keys(formState.fields).forEach((name: keyof Fields) => {
     nextState.fields[name].submitError = null;
   });
 
@@ -347,15 +385,18 @@ function parseSubmitErrors<Fields extends FormFields = FormFields>(
   }
   if (
     typeof errors === 'object' &&
-    'formErrors' in errors &&
-    errors.formErrors
+    'submitErrors' in errors &&
+    errors.submitErrors
   ) {
-    return errors.formErrors as FormErrors<Fields>;
-  } else if (errors instanceof Error && errors) {
+    return errors.submitErrors as FormErrors<Fields>;
+  }
+  if (errors instanceof Error && errors) {
     return { _global: errors.message };
-  } else if (typeof errors === 'string') {
+  }
+  if (typeof errors === 'string') {
     return { _global: errors };
-  } else if (typeof errors === 'object' && errors) {
+  }
+  if (typeof errors === 'object' && errors) {
     return errors as FormErrors<Fields>;
   }
   return { _global: 'Unknown error' };
@@ -370,6 +411,7 @@ export async function submitAction<Fields extends FormFields = FormFields>(
       isSubmitting: false,
       submitFailed: true,
       submitErrors: { _global: 'No submit Handler' },
+      submitError: 'No submit Handler',
     };
   }
 
@@ -378,6 +420,7 @@ export async function submitAction<Fields extends FormFields = FormFields>(
   if (result instanceof Promise) {
     await result;
   } else if (result) {
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw result;
   }
 
@@ -398,12 +441,18 @@ export function failSubmitAction<Fields extends FormFields = FormFields>(
   const nextState = {
     ...formState,
     isSubmitting: false,
+    submitSucceeded: false,
     submitFailed: true,
     submitErrors,
   };
 
-  Object.keys(formState.fields).map((name: keyof Fields) => {
+  if ('_global' in submitErrors && submitErrors._global) {
+    nextState.submitError = submitErrors._global;
+  }
+
+  Object.keys(formState.fields).forEach((name: keyof Fields) => {
     if (name in submitErrors && submitErrors[name]) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       nextState.fields[name].submitError = submitErrors[name];
     }

@@ -42,11 +42,11 @@ function Field({
 
   useEffect(() => {
     mountField(name, initialValue, validate, warn);
-  }, [name, initialValue, validate, warn]);
+  }, [name, initialValue, validate, warn, mountField]);
 
   const onFocus = useCallback(() => {
     focusField(name);
-  }, [name]);
+  }, [focusField, name]);
 
   const onChange = useCallback(
     (eventOrValue: any) => {
@@ -61,12 +61,12 @@ function Field({
         changeField(name, eventOrValue);
       }
     },
-    [name]
+    [changeField, name]
   );
 
   const onBlur = useCallback(() => {
     blurField(name);
-  }, [name]);
+  }, [blurField, name]);
 
   if (!(name in formState.fields)) {
     return null;
