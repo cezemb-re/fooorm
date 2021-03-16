@@ -21,6 +21,7 @@ export interface FieldProps {
   validate?: FieldValidationFunction;
   warn?: FieldValidationFunction;
   children?: React.ReactNode[];
+  [key: string]: any;
 }
 
 function Field({
@@ -30,6 +31,7 @@ function Field({
   warn,
   component,
   children,
+  ...customProps
 }: FieldProps): React.ReactElement | null {
   const {
     formState,
@@ -74,6 +76,7 @@ function Field({
   return React.createElement(
     component || 'input',
     {
+      ...customProps,
       formState,
       field: formState.fields[name],
       onFocus,

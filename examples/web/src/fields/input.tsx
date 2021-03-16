@@ -1,12 +1,17 @@
 import React from 'react';
 import { FieldComponentProps } from '@cezembre/fooorm';
 
+export interface Props {
+  otherProp?: string;
+}
+
 function Input({
   field,
   onFocus,
   onChange,
   onBlur,
-}: FieldComponentProps): React.ReactElement {
+  otherProp = 'top',
+}: FieldComponentProps & Props): React.ReactElement {
   return (
     <div>
       <label htmlFor={field.name}>{field.name}</label>
@@ -24,6 +29,7 @@ function Input({
       <p>isTouched: {field.isTouched.toString()}</p>
       <p>isActive: {field.isActive.toString()}</p>
       <p>isValid: {field.isValid.toString()}</p>
+      <p>{otherProp}</p>
     </div>
   );
 }

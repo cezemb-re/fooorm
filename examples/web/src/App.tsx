@@ -49,6 +49,7 @@ function App(): React.ReactElement {
         <Field
           name="one"
           component={Input}
+          otherProp="tralala"
           initialValue="One"
           validate={validateField}
           warn={warnField}
