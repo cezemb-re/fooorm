@@ -77,6 +77,8 @@ function checkForm<Fields extends FormFields = FormFields>(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       nextState.errors[name] = error;
+    } else {
+      delete nextState.errors[name];
     }
 
     const warning = field?.warning;
@@ -84,6 +86,8 @@ function checkForm<Fields extends FormFields = FormFields>(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       nextState.warnings[name] = warning;
+    } else {
+      delete nextState.warnings[name];
     }
 
     if (field?.hasChanged) {
@@ -251,7 +255,11 @@ export function changeFieldAction<
     ...formState,
     fields: {
       ...fields,
-      [name]: { ...fields[name], hasChanged, value },
+      [name]: {
+        ...fields[name],
+        hasChanged,
+        value,
+      },
     },
     values: {
       ...values,
