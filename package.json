@@ -1,7 +1,7 @@
 {
   "name": "@cezembre/forms",
   "author": "Lucien Perouze",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
