@@ -10,7 +10,7 @@ export interface FieldState<Value = any> {
   warn?: FieldValidationFunction;
   initialValue: Value;
   value: Value;
-  isTouched: boolean;
+  hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
   visited: boolean;
@@ -23,7 +23,7 @@ export const defaultFieldState: FieldState = {
   name: undefined,
   initialValue: undefined,
   value: undefined,
-  isTouched: false,
+  hasChanged: false,
   isValid: true,
   isActive: false,
   visited: false,
@@ -69,12 +69,13 @@ export type FormValidationFunction<Fields extends FormFields = FormFields> = (
 ) => FormErrors<Fields> | Error | string | null | void;
 
 export type FormSubmitFunction<Fields extends FormFields = FormFields> = (
-  values: Fields
+  values: Fields,
+  changes: Partial<Fields>
 ) => Promise<any> | FormErrors | Error | string | null | void;
 
 export interface FormState<Fields extends FormFields = FormFields> {
   nbFields: number;
-  isTouched: boolean;
+  hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
   visited: boolean;
@@ -83,6 +84,7 @@ export interface FormState<Fields extends FormFields = FormFields> {
   submitFailed: boolean;
   submitCounter: number;
   values: Partial<Fields>;
+  changes: Partial<Fields>;
   fields: { [key in keyof Fields]?: FieldState };
   errors: FormErrors<Fields>;
   submitErrors: FormErrors<Fields>;
@@ -100,7 +102,7 @@ export function getDefaultFormState<
 >(): FormState<Fields> {
   return {
     nbFields: 0,
-    isTouched: false,
+    hasChanged: false,
     isValid: false,
     isSubmitting: false,
     submitSucceeded: false,
@@ -109,6 +111,7 @@ export function getDefaultFormState<
     visited: false,
     submitCounter: 0,
     values: {},
+    changes: {},
     fields: {},
     errors: {},
     submitErrors: {},

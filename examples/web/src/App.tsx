@@ -29,9 +29,10 @@ function App(): React.ReactElement {
   }, []);
 
   const onSubmit = useCallback(
-    async (values) =>
+    async (values, changes) =>
       new Promise((resolve, reject) => {
         setTimeout(() => {
+          console.log(changes);
           // reject(
           //   new FormSubmitError({ _global: 'Failed', two: 'also failed' })
           // );
@@ -55,14 +56,14 @@ function App(): React.ReactElement {
     return null;
   }, []);
 
-  const warnForm = useCallback((fields: Partial<Fields>): FormErrors<Fields> => {
+  const validateForm = useCallback((fields: Partial<Fields>): FormErrors<Fields> => {
     const errors: FormErrors<Fields> = {};
     return { _global: 'Carefull with forms !', two: 'Warning from form' };
   }, []);
 
   return (
     <div className="App">
-      <Form<Fields> onSubmit={onSubmit} ref={form} warn={warnForm}>
+      <Form<Fields> onSubmit={onSubmit} ref={form} warn={validateForm}>
         <Field
           name="one"
           component={Input}
@@ -93,7 +94,7 @@ function App(): React.ReactElement {
       <br />
       <h6>Form state</h6>
       <p>isSubmitting: {formState.isSubmitting.toString()}</p>
-      <p>isTouched: {formState.isTouched.toString()}</p>
+      <p>hasChanged: {formState.hasChanged.toString()}</p>
       <p>isValid: {formState.isValid.toString()}</p>
       <p>isActive: {formState.isActive.toString()}</p>
       <p>visited: {formState.visited.toString()}</p>
