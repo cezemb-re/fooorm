@@ -1,2 +1,2 @@
-# fooorm
-Another React form library. But a good one this time I promise.
+# Cézembre forms
+A concise form library for react

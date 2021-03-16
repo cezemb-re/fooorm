@@ -1,12 +1,17 @@
 {
-  "name": "@cezembre/fooorm",
+  "name": "@cezembre/forms",
   "author": "Lucien Perouze",
   "version": "1.0.1",
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "keywords": [
+    "react",
+    "react-native",
+    "forms"
+  ],
   "files": [
-    "dist",
+    "lib",
     "src"
   ],
   "engines": {
