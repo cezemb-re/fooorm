@@ -4,13 +4,23 @@ import {
   Form,
   Field,
   FormState,
-  defaultFormState,
   FormSubmitError,
+  FormErrors,
+  getDefaultFormState,
+  FormFields,
 } from '@cezembre/fooorm';
 import Input from './fields/input';
 
+export interface Fields {
+  one: string;
+  two: string;
+  three: string;
+}
+
+// const MyForm = () => Form<Fields>();
+
 function App(): React.ReactElement {
-  const [formState, setFormState] = useState<FormState>(defaultFormState);
+  const [formState, setFormState] = useState<FormState>(getDefaultFormState());
 
   const form = useCallback((formContext) => {
     if (formContext) {
@@ -28,7 +38,7 @@ function App(): React.ReactElement {
           resolve(null);
         }, 1000);
       }),
-    []
+    [],
   );
 
   const validateField = useCallback((value) => {
@@ -45,13 +55,14 @@ function App(): React.ReactElement {
     return null;
   }, []);
 
-  const warnForm = useCallback(() => {
+  const warnForm = useCallback((fields: Partial<Fields>): FormErrors<Fields> => {
+    const errors: FormErrors<Fields> = {};
     return { _global: 'Carefull with forms !', two: 'Warning from form' };
   }, []);
 
   return (
     <div className="App">
-      <Form onSubmit={onSubmit} ref={form} warn={warnForm}>
+      <Form<Fields> onSubmit={onSubmit} ref={form} warn={warnForm}>
         <Field
           name="one"
           component={Input}

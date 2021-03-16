@@ -4,25 +4,23 @@ import formContext, {
   FieldState,
   defaultFieldState,
   FormState,
-  defaultFormState,
   FormContext,
-  useFormContext,
   FormErrors,
   FormSubmitError,
   isFormSubmitError,
+  getDefaultFormState,
 } from './state';
 import Form from './form';
 import Field, { FieldComponentProps } from './field';
 
 export {
+  formContext,
   Form,
   Field,
-  useFormContext,
-  formContext,
   defaultFieldState,
-  defaultFormState,
   FormSubmitError,
   isFormSubmitError,
+  getDefaultFormState,
 };
 
 export type {
@@ -36,12 +34,11 @@ export type {
 };
 
 export default {
+  formContext,
   Form,
   Field,
-  useFormContext,
-  formContext,
   defaultFieldState,
-  defaultFormState,
   FormSubmitError,
   isFormSubmitError,
+  getDefaultFormState,
 };

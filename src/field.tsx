@@ -2,28 +2,35 @@ import React, { useCallback, useEffect } from 'react';
 import {
   FieldState,
   FormState,
-  useFormContext,
   FieldValidationFunction,
+  useFormContext,
+  FormFields,
 } from './state';
 
-export interface FieldComponentProps extends FieldState {
-  form: FormState;
+export interface FieldComponentProps<
+  Fields extends FormFields = FormFields,
+  Value = any
+> extends FieldState<Value> {
+  form: FormState<Fields>;
   onFocus: () => void;
   onChange: (eventOrValue: any) => void;
   onBlur: () => void;
 }
 
-export interface FieldProps {
-  name: string;
-  initialValue?: any;
-  component?: string | React.ComponentType<FieldComponentProps>;
+export interface FieldProps<
+  Fields extends FormFields = FormFields,
+  Value = any
+> {
+  name: keyof Fields;
+  initialValue?: Value;
+  component?: string | React.ComponentType<FieldComponentProps<Fields, Value>>;
   validate?: FieldValidationFunction;
   warn?: FieldValidationFunction;
   children?: React.ReactNode[];
   [key: string]: any;
 }
 
-function Field({
+function Field<Fields extends FormFields = FormFields, Value = any>({
   name,
   initialValue,
   validate,
@@ -31,14 +38,14 @@ function Field({
   component,
   children,
   ...customProps
-}: FieldProps): React.ReactElement | null {
+}: FieldProps<Fields, Value>): React.ReactElement | null {
   const {
     formState,
     mountField,
     focusField,
     changeField,
     blurField,
-  } = useFormContext();
+  } = useFormContext<Fields>();
 
   useEffect(() => {
     mountField(name, initialValue, validate, warn);
@@ -72,7 +79,7 @@ function Field({
     return null;
   }
 
-  return React.createElement<FieldComponentProps>(
+  return React.createElement<FieldComponentProps<Fields, Value>>(
     component || 'input',
     {
       ...customProps,

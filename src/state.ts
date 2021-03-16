@@ -65,7 +65,7 @@ export function isFormSubmitError(error: any): boolean {
 }
 
 export type FormValidationFunction<Fields extends FormFields = FormFields> = (
-  values: Fields
+  values: Partial<Fields>
 ) => FormErrors<Fields> | Error | string | null | void;
 
 export type FormSubmitFunction<Fields extends FormFields = FormFields> = (
@@ -82,8 +82,8 @@ export interface FormState<Fields extends FormFields = FormFields> {
   submitSucceeded: boolean;
   submitFailed: boolean;
   submitCounter: number;
-  values: Fields;
-  fields: { [key in keyof Fields]: FieldState };
+  values: Partial<Fields>;
+  fields: { [key in keyof Fields]?: FieldState };
   errors: FormErrors<Fields>;
   submitErrors: FormErrors<Fields>;
   error: string | null;
@@ -95,54 +95,62 @@ export interface FormState<Fields extends FormFields = FormFields> {
   warn?: FormValidationFunction<Fields>;
 }
 
-export const defaultFormState: FormState = {
-  nbFields: 0,
-  isTouched: false,
-  isValid: false,
-  isSubmitting: false,
-  submitSucceeded: false,
-  submitFailed: false,
-  isActive: false,
-  visited: false,
-  submitCounter: 0,
-  values: {},
-  fields: {},
-  errors: {},
-  submitErrors: {},
-  error: null,
-  submitError: null,
-  warning: null,
-  warnings: {},
-};
+export function getDefaultFormState<
+  Fields extends FormFields = FormFields
+>(): FormState<Fields> {
+  return {
+    nbFields: 0,
+    isTouched: false,
+    isValid: false,
+    isSubmitting: false,
+    submitSucceeded: false,
+    submitFailed: false,
+    isActive: false,
+    visited: false,
+    submitCounter: 0,
+    values: {},
+    fields: {},
+    errors: {},
+    submitErrors: {},
+    error: null,
+    submitError: null,
+    warning: null,
+    warnings: {},
+  };
+}
 
 export interface FormContext<Fields extends FormFields = FormFields> {
   formState: FormState<Fields>;
   mountField: (
-    name: string,
+    name: keyof Fields,
     initialValue: any,
     validateField?: FieldValidationFunction,
     warnField?: FieldValidationFunction
   ) => void;
-  focusField: (name: string) => void;
-  changeField: (name: string, value: any) => void;
-  blurField: (name: string) => void;
-  resetField: (name: string) => void;
+  focusField: (name: keyof Fields) => void;
+  changeField: (name: keyof Fields, value: any) => void;
+  blurField: (name: keyof Fields) => void;
+  resetField: (name: keyof Fields) => void;
   submitForm: (event?: SyntheticEvent) => Promise<void> | boolean | void;
   resetForm: () => void;
 }
 
-const defaultContext: FormContext<any> = {
-  formState: defaultFormState,
-  mountField: () => undefined,
-  focusField: () => undefined,
-  changeField: () => undefined,
-  blurField: () => undefined,
-  resetField: () => undefined,
-  submitForm: () => undefined,
-  resetForm: () => undefined,
-};
+export function getDefaultContext<
+  Fields extends FormFields = FormFields
+>(): FormContext<Fields> {
+  return {
+    formState: getDefaultFormState<Fields>(),
+    mountField: () => undefined,
+    focusField: () => undefined,
+    changeField: () => undefined,
+    blurField: () => undefined,
+    resetField: () => undefined,
+    submitForm: () => undefined,
+    resetForm: () => undefined,
+  };
+}
 
-const formContext = createContext<FormContext<any>>(defaultContext);
+const formContext = createContext<FormContext<any>>(getDefaultContext());
 
 export function useFormContext<
   Fields extends FormFields = FormFields

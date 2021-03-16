@@ -4,10 +4,13 @@ import React, {
   useState,
   useCallback,
   SyntheticEvent,
+  Ref,
+  PropsWithoutRef,
+  PropsWithRef,
 } from 'react';
 import formContext, {
   FormState,
-  defaultFormState,
+  getDefaultFormState,
   FormFields,
   FormContext,
   FieldValidationFunction,
@@ -30,16 +33,15 @@ export interface FormProps<Fields extends FormFields = FormFields> {
   onSubmit?: FormSubmitFunction<Fields>;
   validate?: FormValidationFunction<Fields>;
   warn?: FormValidationFunction<Fields>;
-  onStateChange?: () => FormState;
   children?: any;
 }
 
-function Form(
-  { onSubmit, validate, warn, onStateChange, children }: FormProps,
-  ref: React.Ref<FormContext>
+function Form<Fields extends FormFields = FormFields>(
+  { onSubmit, validate, warn, children }: FormProps<Fields>,
+  ref: React.Ref<FormContext<Fields>>
 ): React.ReactElement {
-  const [formState, setFormState] = useState<FormState>({
-    ...defaultFormState,
+  const [formState, setFormState] = useState<FormState<Fields>>({
+    ...getDefaultFormState<Fields>(),
     onSubmit,
     validate,
     warn,
@@ -47,13 +49,13 @@ function Form(
 
   const mountField = useCallback(
     (
-      name: string,
+      name: keyof Fields,
       initialValue: any,
       validateField: FieldValidationFunction | undefined,
       warnField: FieldValidationFunction | undefined
     ) =>
       setFormState((_formState) =>
-        mountFieldAction(
+        mountFieldAction<Fields>(
           _formState,
           name,
           initialValue,
@@ -65,25 +67,25 @@ function Form(
   );
 
   const focusField = useCallback(
-    (name: string) =>
+    (name: keyof Fields) =>
       setFormState((_formState) => focusFieldAction(_formState, name)),
     []
   );
 
   const changeField = useCallback(
-    (name: string, value: any) =>
+    (name: keyof Fields, value: any) =>
       setFormState((_formState) => changeFieldAction(_formState, name, value)),
     []
   );
 
   const blurField = useCallback(
-    (name: string) =>
+    (name: keyof Fields) =>
       setFormState((_formState) => blurFieldAction(_formState, name)),
     []
   );
 
   const resetField = useCallback(
-    (name: string) =>
+    (name: keyof Fields) =>
       setFormState((_formState) => resetFieldAction(_formState, name)),
     []
   );
@@ -116,7 +118,7 @@ function Form(
 
   const resetForm = useCallback(() => setFormState(resetFormAction), []);
 
-  useImperativeHandle(
+  useImperativeHandle<FormContext<Fields>, FormContext<Fields>>(
     ref,
     () => ({
       formState,
@@ -142,16 +144,18 @@ function Form(
 
   return (
     <formContext.Provider
-      value={{
-        formState,
-        mountField,
-        focusField,
-        changeField,
-        blurField,
-        resetField,
-        submitForm,
-        resetForm,
-      }}
+      value={
+        {
+          formState,
+          mountField,
+          focusField,
+          changeField,
+          blurField,
+          resetField,
+          submitForm,
+          resetForm,
+        } as FormContext<Fields>
+      }
     >
       {typeof document !== 'undefined' ? (
         <form onSubmit={submitForm} onReset={resetForm}>
@@ -164,4 +168,8 @@ function Form(
   );
 }
 
-export default forwardRef(Form);
+export default forwardRef(Form) as <Fields extends FormFields = FormFields>(
+  props: FormProps<Fields> & {
+    ref: React.Ref<FormContext<Fields>>;
+  }
+) => React.ReactElement;

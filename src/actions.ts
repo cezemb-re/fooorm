@@ -35,7 +35,7 @@ function validateField<Value = any>(
 }
 
 function validateFormFields<Fields extends FormFields = FormFields>(
-  values: Fields,
+  values: Partial<Fields>,
   validate: FormValidationFunction<Fields>
 ): FormErrors<Fields> {
   try {
@@ -69,15 +69,20 @@ function validateForm<Fields extends FormFields = FormFields>(
   };
 
   Object.keys(formState.fields).forEach((field: keyof Fields) => {
-    if (formState.fields[field].error) {
+    const error = formState.fields[field]?.error;
+
+    if (error) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      nextState.errors[field] = formState.fields[field].error;
+      nextState.errors[field] = error;
     }
-    if (formState.fields[field].warning) {
+
+    const warning = formState.fields[field]?.warning;
+
+    if (warning) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      nextState.warnings[field] = formState.fields[field].warning;
+      nextState.warnings[field] = warning;
     }
   });
 
@@ -131,11 +136,11 @@ function validateForm<Fields extends FormFields = FormFields>(
 }
 
 export function mountFieldAction<
-  Value = any,
-  Fields extends FormFields = FormFields
+  Fields extends FormFields = FormFields,
+  Value = any
 >(
   { nbFields, fields, values, ...formState }: FormState<Fields>,
-  name: string,
+  name: keyof Fields,
   initialValue: Value,
   validate: FieldValidationFunction | undefined,
   warn: FieldValidationFunction | undefined
@@ -143,9 +148,11 @@ export function mountFieldAction<
   let value: Value;
   let isTouched = false;
 
-  if (name in fields && isEqual(fields[name].initialValue, initialValue)) {
-    value = fields[name].value;
-    isTouched = fields[name].isTouched;
+  const field = fields[name];
+
+  if (field !== undefined && isEqual(field.initialValue, initialValue)) {
+    value = field.value;
+    isTouched = field.isTouched;
   } else {
     value = initialValue;
   }
@@ -187,7 +194,7 @@ export function mountFieldAction<
 
 export function focusFieldAction<Fields extends FormFields = FormFields>(
   { fields, ...formState }: FormState<Fields>,
-  name: string
+  name: keyof Fields
 ): FormState<Fields> {
   if (!(name in fields) || !fields[name]) {
     throw new Error('Field not found');
@@ -208,7 +215,7 @@ export function changeFieldAction<
   Fields extends FormFields = FormFields
 >(
   { fields, values, ...formState }: FormState<Fields>,
-  name: string,
+  name: keyof Fields,
   value: Value
 ): FormState<Fields> {
   if (!(name in fields) || !fields[name]) {
@@ -227,15 +234,17 @@ export function changeFieldAction<
     },
   };
 
-  if ('validate' in fields[name] && fields[name].validate) {
-    nextState.fields[name].error = validateField(value, fields[name].validate);
+  const field = fields[name];
+
+  if ('validate' in field && field.validate) {
+    nextState.fields[name].error = validateField(value, field.validate);
     if (nextState.fields[name].error) {
       nextState.fields[name].isValid = false;
     }
   }
 
-  if ('warn' in fields[name] && fields[name].warn) {
-    nextState.fields[name].warning = validateField(value, fields[name].warn);
+  if ('warn' in field && field.warn) {
+    nextState.fields[name].warning = validateField(value, field.warn);
   }
 
   return validateForm(nextState);
@@ -243,7 +252,7 @@ export function changeFieldAction<
 
 export function blurFieldAction<Fields extends FormFields = FormFields>(
   { fields, ...formState }: FormState<Fields>,
-  name: string
+  name: keyof Fields
 ): FormState<Fields> {
   if (!(name in fields) || !fields[name]) {
     throw new Error('Field not found');
@@ -260,11 +269,14 @@ export function blurFieldAction<Fields extends FormFields = FormFields>(
 
 export function resetFieldAction<Fields extends FormFields = FormFields>(
   { fields, values, ...formState }: FormState<Fields>,
-  name: string
+  name: keyof Fields
 ): FormState<Fields> {
-  if (!(name in fields) || !fields[name]) {
+  const field = fields[name];
+
+  if (!field) {
     throw new Error('Field not found');
   }
+
   const nextState: FormState<Fields> = {
     ...formState,
     fields: {
@@ -273,7 +285,7 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
         ...fields[name],
         isTouched: false,
         isValid: true,
-        value: fields[name].initialValue,
+        value: field.initialValue,
         error: null,
         warning: null,
         submitError: null,
@@ -281,24 +293,32 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
     },
     values: {
       ...values,
-      [name]: fields[name].initialValue,
+      [name]: field.initialValue,
     },
   };
 
-  if ('validate' in fields[name] && fields[name].validate) {
+  if (field.validate) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     nextState.fields[name].error = validateField(
-      fields[name].initialValue,
-      fields[name].validate
+      field.initialValue,
+      field.validate
     );
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     if (nextState.fields[name].error) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       nextState.fields[name].isValid = false;
     }
   }
 
-  if ('warn' in fields[name] && fields[name].warn) {
+  if (field.warn) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     nextState.fields[name].warning = validateField(
-      fields[name].initialValue,
-      fields[name].warn
+      field.initialValue,
+      field.warn
     );
   }
 
@@ -321,36 +341,50 @@ export function resetFormAction<Fields extends FormFields = FormFields>(
     submitErrors: {},
   };
 
-  Object.keys(nextState.fields).forEach((name: keyof Fields) => {
+  Object.keys(formState.fields).forEach((name: keyof Fields) => {
+    const field = formState.fields[name];
+
+    if (!field) {
+      throw new Error('Field not found');
+    }
+
     nextState.fields[name] = {
       ...formState.fields[name],
       isTouched: false,
       isValid: true,
-      initialValue: formState.fields[name].initialValue,
-      value: formState.fields[name].initialValue,
+      initialValue: field.initialValue,
+      value: field.initialValue,
       error: null,
       warning: null,
       submitError: null,
     };
 
-    if (formState.fields[name].validate) {
+    if (field.validate) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       nextState.fields[name].error = validateField(
-        formState.fields[name].initialValue,
-        formState.fields[name].validate
+        field.initialValue,
+        field.validate
       );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       if (nextState.fields[name].error) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         nextState.fields[name].isValid = false;
       }
     }
 
-    if (formState.fields[name].warn) {
+    if (formState.warn) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       nextState.fields[name].warning = validateField(
-        formState.fields[name].initialValue,
-        formState.fields[name].warn
+        field.initialValue,
+        field.warn
       );
     }
 
-    nextState.values[name] = formState.fields[name].initialValue;
+    nextState.values[name] = field.initialValue;
   });
 
   return validateForm<Fields>(nextState);
@@ -371,6 +405,8 @@ export function startSubmitAction<Fields extends FormFields = FormFields>({
   };
 
   Object.keys(formState.fields).forEach((name: keyof Fields) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     nextState.fields[name].submitError = null;
   });
 
@@ -415,7 +451,7 @@ export async function submitAction<Fields extends FormFields = FormFields>(
     };
   }
 
-  const result = formState.onSubmit(formState.values);
+  const result = formState.onSubmit(formState.values as Fields);
 
   if (result instanceof Promise) {
     await result;
