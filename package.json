@@ -11,8 +11,7 @@
     "forms"
   ],
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "engines": {
     "node": ">=10"
@@ -22,6 +21,7 @@
     "build": "tsc --build",
     "test": "echo 'No tests written",
     "lint": "eslint",
+    "before:release": "npm run lint && npm run build",
     "release": "release-it"
   },
   "peerDependencies": {
@@ -61,5 +61,22 @@
   },
   "dependencies": {
     "lodash.isequal": "^4.5.0"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
+    },
+    "npm": {
+      "publish": true
+    },
+    "github": {
+      "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular"
+      }
+    }
   }
 }
