@@ -170,6 +170,6 @@ function Form<Fields extends FormFields = FormFields>(
 
 export default forwardRef(Form) as <Fields extends FormFields = FormFields>(
   props: FormProps<Fields> & {
-    ref: React.Ref<FormContext<Fields>>;
+    ref?: React.Ref<FormContext<Fields>>;
   }
 ) => React.ReactElement;
