@@ -21,6 +21,7 @@
     "build": "tsc --build",
     "test": "echo 'No tests written",
     "lint": "eslint",
+    "prepare": "npm run lint && npm run build",
     "release": "release-it"
   },
   "peerDependencies": {
@@ -62,9 +63,6 @@
     "lodash.isequal": "^4.5.0"
   },
   "release-it": {
-    "hooks": {
-      "before:init": ["npm run lint", "npm run build"]
-    },
     "git": {
       "commitMessage": "chore: release ${version}",
       "tagName": "v${version}"
