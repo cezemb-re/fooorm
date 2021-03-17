@@ -389,10 +389,10 @@ function parseSubmitErrors<Fields extends FormFields = FormFields>(
   }
   if (
     typeof errors === 'object' &&
-    'submitErrors' in errors &&
-    errors.submitErrors
+    'formErrors' in errors &&
+    errors.formErrors
   ) {
-    return errors.submitErrors as FormErrors<Fields>;
+    return errors.formErrors as FormErrors<Fields>;
   }
   if (errors instanceof Error && errors) {
     return { _global: errors.message };
