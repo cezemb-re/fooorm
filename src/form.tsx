@@ -4,16 +4,12 @@ import React, {
   useState,
   useCallback,
   SyntheticEvent,
-  Ref,
-  PropsWithoutRef,
-  PropsWithRef,
 } from 'react';
 import formContext, {
   FormState,
   getDefaultFormState,
   FormFields,
   FormContext,
-  FieldValidationFunction,
   FormSubmitFunction,
   FormValidationFunction,
 } from './state';
@@ -24,6 +20,7 @@ import {
   changeFieldAction,
   resetFieldAction,
   resetFormAction,
+  checkSubmitAction,
   startSubmitAction,
   submitAction,
   failSubmitAction,
@@ -33,11 +30,18 @@ export interface FormProps<Fields extends FormFields = FormFields> {
   onSubmit?: FormSubmitFunction<Fields>;
   validate?: FormValidationFunction<Fields>;
   warn?: FormValidationFunction<Fields>;
+  liveValidation?: boolean;
   children?: any;
 }
 
 function Form<Fields extends FormFields = FormFields>(
-  { onSubmit, validate, warn, children }: FormProps<Fields>,
+  {
+    onSubmit,
+    validate,
+    warn,
+    liveValidation = false,
+    children,
+  }: FormProps<Fields>,
   ref: React.Ref<FormContext<Fields>>
 ): React.ReactElement {
   const [formState, setFormState] = useState<FormState<Fields>>({
@@ -45,23 +49,13 @@ function Form<Fields extends FormFields = FormFields>(
     onSubmit,
     validate,
     warn,
+    liveValidation,
   });
 
   const mountField = useCallback(
-    (
-      name: keyof Fields,
-      initialValue: any,
-      validateField: FieldValidationFunction | undefined,
-      warnField: FieldValidationFunction | undefined
-    ) =>
+    (name: keyof Fields, initialValue: any) =>
       setFormState((_formState) =>
-        mountFieldAction<Fields>(
-          _formState,
-          name,
-          initialValue,
-          validateField,
-          warnField
-        )
+        mountFieldAction<Fields>(_formState, name, initialValue)
       ),
     []
   );
@@ -101,13 +95,11 @@ function Form<Fields extends FormFields = FormFields>(
         event.preventDefault();
       }
 
-      if (!formState.isValid) {
-        return;
-      }
-
-      setFormState(startSubmitAction);
-
       try {
+        checkSubmitAction(formState);
+
+        setFormState(startSubmitAction);
+
         setFormState(await submitAction(formState));
       } catch (errors) {
         setFormState((_formState) => failSubmitAction(_formState, errors));

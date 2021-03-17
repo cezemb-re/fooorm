@@ -32,60 +32,29 @@ function App(): React.ReactElement {
     async (values, changes) =>
       new Promise((resolve, reject) => {
         setTimeout(() => {
-          console.log(changes);
-          // reject(
-          //   new FormSubmitError({ _global: 'Failed', two: 'also failed' })
-          // );
+          console.log('Submuted !');
+          // reject(new FormSubmitError({ _global: 'Failed', two: 'also failed' }));
           resolve(null);
         }, 1000);
       }),
     [],
   );
 
-  const validateField = useCallback((value) => {
-    if (value === 'toto') {
-      return 'Value should not be toto';
-    }
-    return null;
-  }, []);
-
-  const warnField = useCallback((value) => {
-    if (value === 'titi') {
-      return 'Value titi can lead to bug';
-    }
-    return null;
-  }, []);
-
   const validateForm = useCallback((fields: Partial<Fields>): FormErrors<Fields> => {
     const errors: FormErrors<Fields> = {};
-    return { _global: 'Carefull with forms !', two: 'Warning from form' };
+    if (!fields.two?.length) {
+      return { two: 'Two enpty !' };
+    }
+    return {};
   }, []);
 
   return (
     <div className="App">
-      <Form<Fields> onSubmit={onSubmit} ref={form} warn={validateForm}>
-        <Field
-          name="one"
-          component={Input}
-          otherProp="tralala"
-          initialValue="One"
-          validate={validateField}
-          warn={warnField}
-        />
-        <Field
-          name="two"
-          component={Input}
-          initialValue="Two"
-          validate={validateField}
-          warn={warnField}
-        />
-        <Field
-          name="three"
-          component={Input}
-          initialValue="Three"
-          validate={validateField}
-          warn={warnField}
-        />
+      <Form<Fields> onSubmit={onSubmit} ref={form} validate={validateForm}>
+        <Field name="one" component={Input} otherProp="tralala" initialValue="One" />
+        <Field name="two" type="password" component={Input} initialValue="" />
+        <Field name="three" component={Input} initialValue="Three" />
+
         <input type="submit" value="Submit" />
         <input type="reset" value="Reset" />
       </Form>
@@ -93,6 +62,7 @@ function App(): React.ReactElement {
       <br />
       <br />
       <h6>Form state</h6>
+      <p>submitCounter: {formState.submitCounter}</p>
       <p>isSubmitting: {formState.isSubmitting.toString()}</p>
       <p>hasChanged: {formState.hasChanged.toString()}</p>
       <p>isValid: {formState.isValid.toString()}</p>
@@ -102,7 +72,8 @@ function App(): React.ReactElement {
       <p>submitFailed: {formState.submitFailed.toString()}</p>
       <p>Error: {formState.error}</p>
       <p>Warning: {formState.warning}</p>
-      <p>Submit error: {formState.submitError}</p>
+      <p>Error: {JSON.stringify(formState.errors)}</p>
+      <p>Changes: {JSON.stringify(formState.changes)}</p>
     </div>
   );
 }

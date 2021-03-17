@@ -21,7 +21,6 @@ const defaultResolver: Resolver = (value: any): string | number => {
 function Input({
   error,
   warning,
-  submitError,
   value,
   isValid,
   isActive,
@@ -52,8 +51,6 @@ function Input({
       />
       <p>ERROR: {error}</p>
       <p>WARNING: {warning}</p>
-      <p>SUBMIT ERROR: {submitError}</p>
-      <p>value: {value}</p>
       <p>hasChanged: {hasChanged.toString()}</p>
       <p>isActive: {isActive.toString()}</p>
       <p>visited: {visited.toString()}</p>

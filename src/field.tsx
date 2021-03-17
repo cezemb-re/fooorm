@@ -1,11 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import {
-  FieldState,
-  FormState,
-  FieldValidationFunction,
-  useFormContext,
-  FormFields,
-} from './state';
+import { FieldState, FormState, useFormContext, FormFields } from './state';
 
 export interface FieldComponentProps<
   Fields extends FormFields = FormFields,
@@ -24,8 +18,6 @@ export interface FieldProps<
   name: keyof Fields;
   initialValue?: Value;
   component?: string | React.ComponentType<FieldComponentProps<Fields, Value>>;
-  validate?: FieldValidationFunction;
-  warn?: FieldValidationFunction;
   children?: React.ReactNode[];
   [key: string]: any;
 }
@@ -33,8 +25,6 @@ export interface FieldProps<
 function Field<Fields extends FormFields = FormFields, Value = any>({
   name,
   initialValue,
-  validate,
-  warn,
   component,
   children,
   ...customProps
@@ -48,8 +38,8 @@ function Field<Fields extends FormFields = FormFields, Value = any>({
   } = useFormContext<Fields>();
 
   useEffect(() => {
-    mountField(name, initialValue, validate, warn);
-  }, [name, initialValue, validate, warn, mountField]);
+    mountField(name, initialValue);
+  }, [name, initialValue, mountField]);
 
   const onFocus = useCallback(() => {
     focusField(name);

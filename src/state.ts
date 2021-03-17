@@ -6,8 +6,6 @@ export type FieldValidationFunction = (
 
 export interface FieldState<Value = any> {
   name?: string;
-  validate?: FieldValidationFunction;
-  warn?: FieldValidationFunction;
   initialValue: Value;
   value: Value;
   hasChanged: boolean;
@@ -15,7 +13,6 @@ export interface FieldState<Value = any> {
   isActive: boolean;
   visited: boolean;
   error: string | null;
-  submitError: string | null;
   warning: string | null;
 }
 
@@ -28,7 +25,6 @@ export const defaultFieldState: FieldState = {
   isActive: false,
   visited: false,
   error: null,
-  submitError: null,
   warning: null,
 };
 
@@ -87,14 +83,13 @@ export interface FormState<Fields extends FormFields = FormFields> {
   changes: Partial<Fields>;
   fields: { [key in keyof Fields]?: FieldState };
   errors: FormErrors<Fields>;
-  submitErrors: FormErrors<Fields>;
   error: string | null;
   warning: string | null;
-  submitError: string | null;
   warnings: FormErrors<Fields>;
-  onSubmit?: FormSubmitFunction<Fields>;
-  validate?: FormValidationFunction<Fields>;
-  warn?: FormValidationFunction<Fields>;
+  liveValidation: boolean;
+  onSubmit?: FormSubmitFunction<Fields> | null;
+  validate?: FormValidationFunction<Fields> | null;
+  warn?: FormValidationFunction<Fields> | null;
 }
 
 export function getDefaultFormState<
@@ -103,7 +98,7 @@ export function getDefaultFormState<
   return {
     nbFields: 0,
     hasChanged: false,
-    isValid: false,
+    isValid: true,
     isSubmitting: false,
     submitSucceeded: false,
     submitFailed: false,
@@ -114,11 +109,10 @@ export function getDefaultFormState<
     changes: {},
     fields: {},
     errors: {},
-    submitErrors: {},
     error: null,
-    submitError: null,
     warning: null,
     warnings: {},
+    liveValidation: false,
   };
 }
 
