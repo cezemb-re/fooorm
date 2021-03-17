@@ -10,6 +10,7 @@ import {
   FormFields,
 } from '@cezembre/fooorm';
 import Input from './fields/input';
+import Select from './fields/select';
 
 export interface Fields {
   one: string;
@@ -51,9 +52,7 @@ function App(): React.ReactElement {
   return (
     <div className="App">
       <Form<Fields> onSubmit={onSubmit} ref={form} validate={validateForm}>
-        <Field name="one" component={Input} otherProp="tralala" initialValue="One" />
-        <Field name="two" type="password" component={Input} initialValue="" />
-        <Field name="three" component={Input} initialValue="Three" />
+        <Field name="three" component={Select} initialValue={{ test: 'lol' }} />
 
         <input type="submit" value="Submit" />
         <input type="reset" value="Reset" />

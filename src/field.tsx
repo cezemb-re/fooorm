@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
+import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
 
 export interface FieldComponentProps<
@@ -29,6 +30,9 @@ function Field<Fields extends FormFields = FormFields, Value = any>({
   children,
   ...customProps
 }: FieldProps<Fields, Value>): React.ReactElement | null {
+  const memoizedName = useRef<keyof Fields>();
+  const memoizedInitialValue = useRef<Value>();
+
   const {
     formState,
     mountField,
@@ -38,7 +42,14 @@ function Field<Fields extends FormFields = FormFields, Value = any>({
   } = useFormContext<Fields>();
 
   useEffect(() => {
-    mountField(name, initialValue);
+    if (
+      memoizedName.current !== name ||
+      !isEqual(memoizedInitialValue.current, initialValue)
+    ) {
+      mountField(name, initialValue);
+      memoizedName.current = name;
+      memoizedInitialValue.current = initialValue;
+    }
   }, [name, initialValue, mountField]);
 
   const onFocus = useCallback(() => {
