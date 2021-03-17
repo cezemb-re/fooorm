@@ -43,7 +43,7 @@ function dispatchErrors<Fields extends FormFields = FormFields>(
   formState: FormState<Fields>,
   errors: FormErrors<Fields>
 ): FormState<Fields> {
-  const nextState = { ...formState };
+  const nextState = { ...formState, errors };
 
   Object.keys(errors).forEach((field: keyof Fields) => {
     nextState.errors[field] = errors[field];
@@ -67,7 +67,7 @@ function dispatchWarnings<Fields extends FormFields = FormFields>(
   formState: FormState<Fields>,
   warnings: FormErrors<Fields>
 ): FormState<Fields> {
-  const nextState = { ...formState };
+  const nextState = { ...formState, warnings };
 
   Object.keys(warnings).forEach((field: keyof Fields) => {
     nextState.warnings[field] = warnings[field];
@@ -298,6 +298,7 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
       [name]: {
         ...fields[name],
         hasChanged: false,
+        submitted: false,
         isValid: true,
         value: field.initialValue,
         error: null,
@@ -346,6 +347,7 @@ export function resetFormAction<Fields extends FormFields = FormFields>(
       ...formState.fields[name],
       hasChanged: false,
       isValid: true,
+      submitted: false,
       value: field.initialValue,
       error: null,
       warning: null,
@@ -358,33 +360,25 @@ export function resetFormAction<Fields extends FormFields = FormFields>(
   return formState.liveValidation ? validateForm<Fields>(nextState) : nextState;
 }
 
-export function checkSubmitAction<Fields extends FormFields = FormFields>(
-  formState: FormState<Fields>
-): void {
-  if (formState.validate) {
-    const errors = checkFormFields<Fields>(
-      formState.values,
-      formState.validate
-    );
-
-    if (Object.values(errors).length) {
-      // eslint-disable-next-line @typescript-eslint/no-throw-literal
-      throw errors;
-    }
-  }
-}
-
 export function startSubmitAction<Fields extends FormFields = FormFields>({
   submitCounter,
   ...formState
 }: FormState<Fields>): FormState<Fields> {
-  return {
+  const nextState = {
     ...formState,
     isSubmitting: true,
     submitSucceeded: false,
     submitFailed: false,
     submitCounter: submitCounter + 1,
   };
+
+  Object.keys(nextState.fields).forEach((name: keyof Fields) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    nextState.fields[name].submitted = true;
+  });
+
+  return nextState;
 }
 
 function parseSubmitErrors<Fields extends FormFields = FormFields>(
@@ -412,6 +406,24 @@ function parseSubmitErrors<Fields extends FormFields = FormFields>(
   return { _global: 'Unknown error' };
 }
 
+export function failSubmitAction<Fields extends FormFields = FormFields>(
+  formState: FormState<Fields>,
+  submitErrors: FormSubmitError<Fields> | FormErrors<Fields> | Error | string
+): FormState<Fields> {
+  const errors = parseSubmitErrors<Fields>(submitErrors);
+
+  let nextState = {
+    ...formState,
+    isSubmitting: false,
+    submitSucceeded: false,
+    submitFailed: true,
+  };
+
+  nextState = dispatchErrors<Fields>(nextState, errors);
+
+  return nextState;
+}
+
 export async function submitAction<Fields extends FormFields = FormFields>(
   formState: FormState<Fields>
 ): Promise<FormState<Fields>> {
@@ -423,6 +435,17 @@ export async function submitAction<Fields extends FormFields = FormFields>(
       errors: { _global: 'No submit Handler' },
       error: 'No submit Handler',
     };
+  }
+
+  if (formState.validate) {
+    const errors = checkFormFields<Fields>(
+      formState.values,
+      formState.validate
+    );
+
+    if (Object.values(errors).length) {
+      return failSubmitAction<Fields>(formState, errors);
+    }
   }
 
   const result = formState.onSubmit(
@@ -442,23 +465,4 @@ export async function submitAction<Fields extends FormFields = FormFields>(
     isSubmitting: false,
     submitSucceeded: true,
   };
-}
-
-export function failSubmitAction<Fields extends FormFields = FormFields>(
-  formState: FormState<Fields>,
-  submitErrors: FormSubmitError<Fields> | FormErrors<Fields> | Error | string
-): FormState<Fields> {
-  const errors = parseSubmitErrors<Fields>(submitErrors);
-
-  let nextState = {
-    ...formState,
-    isSubmitting: false,
-    submitSucceeded: false,
-    submitFailed: true,
-    errors,
-  };
-
-  nextState = dispatchErrors<Fields>(nextState, errors);
-
-  return nextState;
 }

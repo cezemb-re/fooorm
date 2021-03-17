@@ -25,6 +25,7 @@ function Input({
   isValid,
   isActive,
   visited,
+  submitted,
   hasChanged,
   name,
   onFocus,
@@ -54,6 +55,7 @@ function Input({
       <p>hasChanged: {hasChanged.toString()}</p>
       <p>isActive: {isActive.toString()}</p>
       <p>visited: {visited.toString()}</p>
+      <p>sumbitted: {submitted.toString()}</p>
       <p>isValid: {isValid.toString()}</p>
       <p>{otherProp}</p>
     </div>

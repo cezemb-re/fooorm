@@ -20,7 +20,6 @@ import {
   changeFieldAction,
   resetFieldAction,
   resetFormAction,
-  checkSubmitAction,
   startSubmitAction,
   submitAction,
   failSubmitAction,
@@ -95,12 +94,14 @@ function Form<Fields extends FormFields = FormFields>(
         event.preventDefault();
       }
 
+      let nextState = startSubmitAction(formState);
+
+      setFormState(nextState);
+
       try {
-        checkSubmitAction(formState);
+        nextState = await submitAction(formState);
 
-        setFormState(startSubmitAction);
-
-        setFormState(await submitAction(formState));
+        setFormState(nextState);
       } catch (errors) {
         setFormState((_formState) => failSubmitAction(_formState, errors));
       }

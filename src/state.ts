@@ -12,6 +12,7 @@ export interface FieldState<Value = any> {
   isValid: boolean;
   isActive: boolean;
   visited: boolean;
+  submitted: boolean;
   error: string | null;
   warning: string | null;
 }
@@ -24,6 +25,7 @@ export const defaultFieldState: FieldState = {
   isValid: true,
   isActive: false,
   visited: false,
+  submitted: false,
   error: null,
   warning: null,
 };
