@@ -1,9 +1,13 @@
 import React from 'react';
+import { FieldComponentProps } from '../../../../lib';
 
-function Select(): React.ReactElement {
+function Select({ value, onChange }: FieldComponentProps): React.ReactElement {
   return (
     <div>
-      <p>Input</p>
+      <p>value: {JSON.stringify(value)}</p>
+      <button type="button" onClick={() => onChange({ toto: 'titi' })}>
+        Ok
+      </button>
     </div>
   );
 }

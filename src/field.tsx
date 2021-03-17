@@ -58,15 +58,20 @@ function Field<Fields extends FormFields = FormFields, Value = any>({
 
   const onChange = useCallback(
     (eventOrValue: any) => {
-      if (typeof eventOrValue === 'object' && eventOrValue) {
-        if ('target' in eventOrValue && 'value' in eventOrValue.target) {
-          changeField(name, eventOrValue.target.value);
-        } else if (
-          'currentTarget' in eventOrValue &&
-          'value' in eventOrValue.currentTarget
-        ) {
-          changeField(name, eventOrValue.currentTarget.value);
-        }
+      if (
+        typeof eventOrValue === 'object' &&
+        eventOrValue &&
+        'target' in eventOrValue &&
+        'value' in eventOrValue.target
+      ) {
+        changeField(name, eventOrValue.target.value);
+      } else if (
+        typeof eventOrValue === 'object' &&
+        eventOrValue &&
+        'currentTarget' in eventOrValue &&
+        'value' in eventOrValue.currentTarget
+      ) {
+        changeField(name, eventOrValue.currentTarget.value);
       } else {
         changeField(name, eventOrValue);
       }
