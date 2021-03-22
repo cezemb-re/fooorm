@@ -30,6 +30,7 @@ export interface FormProps<Fields extends FormFields = FormFields> {
   validate?: FormValidationFunction<Fields>;
   warn?: FormValidationFunction<Fields>;
   liveValidation?: boolean;
+  className?: string;
   children?: any;
 }
 
@@ -39,6 +40,7 @@ function Form<Fields extends FormFields = FormFields>(
     validate,
     warn,
     liveValidation = false,
+    className = undefined,
     children,
   }: FormProps<Fields>,
   ref: React.Ref<FormContext<Fields>>
@@ -151,7 +153,7 @@ function Form<Fields extends FormFields = FormFields>(
       }
     >
       {typeof document !== 'undefined' ? (
-        <form onSubmit={submitForm} onReset={resetForm}>
+        <form onSubmit={submitForm} onReset={resetForm} className={className}>
           {children}
         </form>
       ) : (
