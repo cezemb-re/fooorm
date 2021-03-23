@@ -251,6 +251,13 @@ export function changeFieldAction<
     changes: nextChanges,
   };
 
+  if (formState.onChange) {
+    formState.onChange(
+      nextState.values as Fields,
+      nextState.changes as Partial<Fields>
+    );
+  }
+
   return checkFieldChanges<Fields>(
     formState.liveValidation ? validateForm<Fields>(nextState) : nextState
   );
@@ -313,6 +320,13 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
     changes: nextChanges,
   };
 
+  if (formState.onChange) {
+    formState.onChange(
+      nextState.values as Fields,
+      nextState.changes as Partial<Fields>
+    );
+  }
+
   return checkFieldChanges<Fields>(
     formState.liveValidation ? validateForm<Fields>(nextState) : nextState
   );
@@ -356,6 +370,13 @@ export function resetFormAction<Fields extends FormFields = FormFields>(
 
     nextState.values[name] = field.initialValue;
   });
+
+  if (formState.onChange) {
+    formState.onChange(
+      nextState.values as Fields,
+      nextState.changes as Partial<Fields>
+    );
+  }
 
   return formState.liveValidation ? validateForm<Fields>(nextState) : nextState;
 }

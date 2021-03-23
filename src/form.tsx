@@ -27,6 +27,7 @@ import {
 
 export interface FormProps<Fields extends FormFields = FormFields> {
   onSubmit?: FormSubmitFunction<Fields>;
+  onChange?: FormSubmitFunction<Fields>;
   validate?: FormValidationFunction<Fields>;
   warn?: FormValidationFunction<Fields>;
   liveValidation?: boolean;
@@ -37,6 +38,7 @@ export interface FormProps<Fields extends FormFields = FormFields> {
 function Form<Fields extends FormFields = FormFields>(
   {
     onSubmit,
+    onChange,
     validate,
     warn,
     liveValidation = false,
@@ -48,6 +50,7 @@ function Form<Fields extends FormFields = FormFields>(
   const [formState, setFormState] = useState<FormState<Fields>>({
     ...getDefaultFormState<Fields>(),
     onSubmit,
+    onChange,
     validate,
     warn,
     liveValidation,

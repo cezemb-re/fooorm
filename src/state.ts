@@ -90,6 +90,7 @@ export interface FormState<Fields extends FormFields = FormFields> {
   warnings: FormErrors<Fields>;
   liveValidation: boolean;
   onSubmit?: FormSubmitFunction<Fields> | null;
+  onChange?: FormSubmitFunction<Fields> | null;
   validate?: FormValidationFunction<Fields> | null;
   warn?: FormValidationFunction<Fields> | null;
 }
