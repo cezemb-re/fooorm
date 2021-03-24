@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   SyntheticEvent,
+  useEffect,
 } from 'react';
 import formContext, {
   FormState,
@@ -55,6 +56,17 @@ function Form<Fields extends FormFields = FormFields>(
     warn,
     liveValidation,
   });
+
+  useEffect(() => {
+    setFormState((lastState) => ({
+      ...lastState,
+      onSubmit,
+      onChange,
+      validate,
+      warn,
+      liveValidation,
+    }));
+  }, [onSubmit, onChange, validate, warn, liveValidation]);
 
   const mountField = useCallback(
     (name: keyof Fields, initialValue: any) =>
