@@ -1,35 +1,43 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, {
+  ReactElement,
+  ReactNode,
+  ComponentType,
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
 
 export interface FieldComponentProps<
-  Fields extends FormFields = FormFields,
-  Value = any
+  Value = any,
+  Fields extends FormFields = FormFields
 > extends FieldState<Value> {
   form: FormState<Fields>;
   onFocus: () => void;
-  onChange: (eventOrValue: any) => void;
+  onChange: (eventOrValue: ChangeEvent<{ value: Value }> | Value) => void;
   onBlur: () => void;
 }
 
 export interface FieldProps<
-  Fields extends FormFields = FormFields,
-  Value = any
+  Value = any,
+  Fields extends FormFields = FormFields
 > {
   name: keyof Fields;
   initialValue?: Value;
-  component?: string | React.ComponentType<FieldComponentProps<Fields, Value>>;
-  children?: React.ReactNode[];
+  component?: string | ComponentType<FieldComponentProps<Value, Fields>>;
+  children?: ReactNode[];
   [key: string]: any;
 }
 
-function Field<Fields extends FormFields = FormFields, Value = any>({
+function Field<Value = any, Fields extends FormFields = FormFields>({
   name,
   initialValue,
   component,
   children,
   ...customProps
-}: FieldProps<Fields, Value>): React.ReactElement | null {
+}: FieldProps<Value, Fields>): ReactElement | null {
   const memoizedName = useRef<keyof Fields>();
   const memoizedInitialValue = useRef<Value>();
 
@@ -57,11 +65,12 @@ function Field<Fields extends FormFields = FormFields, Value = any>({
   }, [focusField, name]);
 
   const onChange = useCallback(
-    (eventOrValue: any) => {
+    (eventOrValue: ChangeEvent<{ value: Value }> | Value) => {
       if (
         typeof eventOrValue === 'object' &&
         eventOrValue &&
         'target' in eventOrValue &&
+        eventOrValue.target &&
         'value' in eventOrValue.target
       ) {
         changeField(name, eventOrValue.target.value);
@@ -69,6 +78,7 @@ function Field<Fields extends FormFields = FormFields, Value = any>({
         typeof eventOrValue === 'object' &&
         eventOrValue &&
         'currentTarget' in eventOrValue &&
+        eventOrValue.currentTarget &&
         'value' in eventOrValue.currentTarget
       ) {
         changeField(name, eventOrValue.currentTarget.value);
@@ -87,7 +97,7 @@ function Field<Fields extends FormFields = FormFields, Value = any>({
     return null;
   }
 
-  return React.createElement<FieldComponentProps<Fields, Value>>(
+  return React.createElement<FieldComponentProps<Value, Fields>>(
     component || 'input',
     {
       ...customProps,
