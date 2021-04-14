@@ -5,6 +5,8 @@ import React, {
   useCallback,
   SyntheticEvent,
   useEffect,
+  Ref,
+  ReactElement,
 } from 'react';
 import formContext, {
   FormState,
@@ -46,8 +48,8 @@ function Form<Fields extends FormFields = FormFields>(
     className = undefined,
     children,
   }: FormProps<Fields>,
-  ref: React.Ref<FormContext<Fields>>
-): React.ReactElement {
+  ref: Ref<FormContext<Fields>>
+): ReactElement {
   const [formState, setFormState] = useState<FormState<Fields>>({
     ...getDefaultFormState<Fields>(),
     onSubmit,
@@ -180,6 +182,6 @@ function Form<Fields extends FormFields = FormFields>(
 
 export default forwardRef(Form) as <Fields extends FormFields = FormFields>(
   props: FormProps<Fields> & {
-    ref?: React.Ref<FormContext<Fields>>;
+    ref?: Ref<FormContext<Fields>>;
   }
-) => React.ReactElement;
+) => ReactElement;

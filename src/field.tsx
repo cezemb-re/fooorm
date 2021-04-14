@@ -31,7 +31,10 @@ export interface FieldProps<
   [key: string]: any;
 }
 
-function Field<Value = any, Fields extends FormFields = FormFields>({
+export default function Field<
+  Value = any,
+  Fields extends FormFields = FormFields
+>({
   name,
   initialValue,
   component,
@@ -110,5 +113,3 @@ function Field<Value = any, Fields extends FormFields = FormFields>({
     children
   );
 }
-
-export default Field;
