@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { FieldComponentProps } from '@cezembre/fooorm';
+import React, { useCallback, useEffect } from 'react';
+import { FieldComponentProps } from '@cezembre/form';
 
 export interface Props {
   otherProp?: string;
@@ -31,7 +31,6 @@ function Input({
   onFocus,
   onChange,
   onBlur,
-  otherProp = 'top',
 }: FieldComponentProps & Props): React.ReactElement {
   const customOnChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +38,10 @@ function Input({
     },
     [onChange],
   );
+
+  useEffect(() => {
+    console.log('Mount field !');
+  }, []);
 
   return (
     <div>
@@ -50,14 +53,6 @@ function Input({
         onChange={customOnChange}
         onBlur={onBlur}
       />
-      <p>ERROR: {error}</p>
-      <p>WARNING: {warning}</p>
-      <p>hasChanged: {hasChanged.toString()}</p>
-      <p>isActive: {isActive.toString()}</p>
-      <p>visited: {visited.toString()}</p>
-      <p>sumbitted: {submitted.toString()}</p>
-      <p>isValid: {isValid.toString()}</p>
-      <p>{otherProp}</p>
     </div>
   );
 }

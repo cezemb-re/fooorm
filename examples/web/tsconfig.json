@@ -16,16 +16,17 @@
     "alwaysStrict": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
     "types": [
-      "react-scripts",
+      "react-scripts"
     ],
-    "noEmit": true
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true
   },
   "exclude": [
     "node_modules"
