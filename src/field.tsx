@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useEffect,
   useRef,
+  PropsWithChildren,
 } from 'react';
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
@@ -18,6 +19,7 @@ export interface FieldComponentProps<
   onFocus: () => void;
   onChange: (eventOrValue: ChangeEvent<{ value: Value }> | Value) => void;
   onBlur: () => void;
+  [key: string]: any; // Custom Props
 }
 
 export interface FieldProps<
@@ -100,16 +102,27 @@ export default function Field<
     return null;
   }
 
-  return React.createElement<FieldComponentProps<Value, Fields>>(
-    component || 'input',
-    {
-      ...customProps,
-      ...formState.fields[name],
-      form: formState,
-      onFocus,
-      onChange,
-      onBlur,
-    },
-    children
-  );
+  if (component) {
+    return React.createElement<FieldComponentProps<Value, Fields>>(
+      component,
+      {
+        ...customProps,
+        ...formState.fields[name],
+        form: formState,
+        onFocus,
+        onChange,
+        onBlur,
+      },
+      children
+    );
+  }
+
+  return React.createElement('input', {
+    ...customProps,
+    name,
+    value: formState.fields[name]?.value,
+    onFocus,
+    onChange,
+    onBlur,
+  });
 }
