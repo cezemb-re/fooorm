@@ -79,27 +79,25 @@ function Form<Fields extends FormFields = FormFields>(
   );
 
   const focusField = useCallback(
-    (name: keyof Fields) =>
-      setFormState((_formState) => focusFieldAction(_formState, name)),
-    []
+    (name: keyof Fields) => setFormState(focusFieldAction(formState, name)),
+    [formState]
   );
 
   const changeField = useCallback(
-    (name: keyof Fields, value: any) =>
-      setFormState((_formState) => changeFieldAction(_formState, name, value)),
-    []
+    (name: keyof Fields, value: any) => {
+      setFormState(changeFieldAction(formState, name, value));
+    },
+    [formState]
   );
 
   const blurField = useCallback(
-    (name: keyof Fields) =>
-      setFormState((_formState) => blurFieldAction(_formState, name)),
-    []
+    (name: keyof Fields) => setFormState(blurFieldAction(formState, name)),
+    [formState]
   );
 
   const resetField = useCallback(
-    (name: keyof Fields) =>
-      setFormState((_formState) => resetFieldAction(_formState, name)),
-    []
+    (name: keyof Fields) => setFormState(resetFieldAction(formState, name)),
+    [formState]
   );
 
   const submitForm = useCallback(
@@ -122,7 +120,7 @@ function Form<Fields extends FormFields = FormFields>(
 
         setFormState(nextState);
       } catch (errors) {
-        setFormState((_formState) => failSubmitAction(_formState, errors));
+        setFormState(failSubmitAction(formState, errors));
       }
     },
     [formState]
