@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { FieldComponentProps } from '../../../../lib';
 
 function Select({ value, onChange }: FieldComponentProps): React.ReactElement {

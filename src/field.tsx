@@ -1,4 +1,5 @@
-import React, {
+import {
+  createElement,
   ReactElement,
   ReactNode,
   ComponentType,
@@ -6,7 +7,6 @@ import React, {
   useCallback,
   useEffect,
   useRef,
-  PropsWithChildren,
 } from 'react';
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
@@ -14,7 +14,7 @@ import { FieldState, FormState, useFormContext, FormFields } from './state';
 export interface FieldComponentProps<
   Value = any,
   Fields extends FormFields = FormFields
-> extends FieldState<Value> {
+> extends Partial<FieldState<Value>> {
   form: FormState<Fields>;
   onFocus: () => void;
   onChange: (eventOrValue: ChangeEvent<{ value: Value }> | Value) => void;
@@ -46,13 +46,8 @@ export default function Field<
   const memoizedName = useRef<keyof Fields>();
   const memoizedInitialValue = useRef<Value>();
 
-  const {
-    formState,
-    mountField,
-    focusField,
-    changeField,
-    blurField,
-  } = useFormContext<Fields>();
+  const { formState, mountField, focusField, changeField, blurField } =
+    useFormContext<Fields>();
 
   useEffect(() => {
     if (
@@ -103,7 +98,7 @@ export default function Field<
   }
 
   if (component) {
-    return React.createElement<FieldComponentProps<Value, Fields>>(
+    return createElement<FieldComponentProps<Value, Fields>>(
       component,
       {
         ...customProps,
@@ -117,7 +112,7 @@ export default function Field<
     );
   }
 
-  return React.createElement('input', {
+  return createElement('input', {
     ...customProps,
     name,
     value: formState.fields[name]?.value,
