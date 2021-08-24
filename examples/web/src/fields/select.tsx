@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { FieldComponentProps } from '../../../../lib';
+import { ReactElement } from 'react';
+import { FieldComponentProps } from '@cezembre/form';
 
-function Select({ value, onChange }: FieldComponentProps): React.ReactElement {
+export default function Select({ value, onChange }: FieldComponentProps): ReactElement {
   return (
     <div>
       <p>value: {JSON.stringify(value)}</p>
@@ -11,5 +11,3 @@ function Select({ value, onChange }: FieldComponentProps): React.ReactElement {
     </div>
   );
 }
-
-export default Select;

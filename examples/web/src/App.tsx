@@ -1,11 +1,10 @@
-import { useCallback, useState } from 'react';
-import * as React from 'react';
+import { ReactElement } from 'react';
 import { Switch, Route } from 'react-router-dom';
 import './App.css';
 import Sign from './sign';
 import Profile from './profile';
 
-function App(): React.ReactElement {
+export default function App(): ReactElement {
   return (
     <div className="App">
       <Switch>
@@ -15,5 +14,3 @@ function App(): React.ReactElement {
     </div>
   );
 }
-
-export default App;

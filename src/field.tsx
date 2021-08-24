@@ -11,10 +11,8 @@ import {
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
 
-export interface FieldComponentProps<
-  Value = any,
-  Fields extends FormFields = FormFields
-> extends Partial<FieldState<Value>> {
+export interface FieldComponentProps<Value = any, Fields extends FormFields = FormFields>
+  extends Partial<FieldState<Value>> {
   form: FormState<Fields>;
   onFocus: () => void;
   onChange: (eventOrValue: ChangeEvent<{ value: Value }> | Value) => void;
@@ -22,10 +20,7 @@ export interface FieldComponentProps<
   [key: string]: any; // Custom Props
 }
 
-export interface FieldProps<
-  Value = any,
-  Fields extends FormFields = FormFields
-> {
+export interface FieldProps<Value = any, Fields extends FormFields = FormFields> {
   name: keyof Fields;
   initialValue?: Value;
   component?: string | ComponentType<FieldComponentProps<Value, Fields>>;
@@ -33,10 +28,7 @@ export interface FieldProps<
   [key: string]: any;
 }
 
-export default function Field<
-  Value = any,
-  Fields extends FormFields = FormFields
->({
+export default function Field<Value = any, Fields extends FormFields = FormFields>({
   name,
   initialValue,
   component,
@@ -46,14 +38,10 @@ export default function Field<
   const memoizedName = useRef<keyof Fields>();
   const memoizedInitialValue = useRef<Value>();
 
-  const { formState, mountField, focusField, changeField, blurField } =
-    useFormContext<Fields>();
+  const { formState, mountField, focusField, changeField, blurField } = useFormContext<Fields>();
 
   useEffect(() => {
-    if (
-      memoizedName.current !== name ||
-      !isEqual(memoizedInitialValue.current, initialValue)
-    ) {
+    if (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue)) {
       mountField(name, initialValue);
       memoizedName.current = name;
       memoizedInitialValue.current = initialValue;
@@ -86,7 +74,7 @@ export default function Field<
         changeField(name, eventOrValue);
       }
     },
-    [changeField, name]
+    [changeField, name],
   );
 
   const onBlur = useCallback(() => {
@@ -108,7 +96,7 @@ export default function Field<
         onChange,
         onBlur,
       },
-      children
+      children,
     );
   }
 

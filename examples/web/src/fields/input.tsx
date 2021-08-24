@@ -1,12 +1,11 @@
-import { useCallback, useEffect } from 'react';
-import * as React from 'react';
+import { useCallback, useEffect, ChangeEvent, ReactElement } from 'react';
 import { FieldComponentProps } from '@cezembre/form';
 
 export interface Props {
   otherProp?: string;
 }
 
-export type Adapter = (event: React.ChangeEvent<HTMLInputElement>) => any;
+export type Adapter = (event: ChangeEvent<HTMLInputElement>) => any;
 export type Resolver = (value: any) => string | number;
 
 const defaultAdapter: Adapter = (event: React.ChangeEvent<HTMLInputElement>): string =>
@@ -19,7 +18,7 @@ const defaultResolver: Resolver = (value: any): string | number => {
   return value;
 };
 
-function Input({
+export default function Input({
   error,
   warning,
   value,
@@ -32,9 +31,9 @@ function Input({
   onFocus,
   onChange,
   onBlur,
-}: FieldComponentProps & Props): React.ReactElement {
+}: FieldComponentProps & Props): ReactElement {
   const customOnChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>) => {
       return onChange(defaultAdapter(event));
     },
     [onChange],
@@ -57,5 +56,3 @@ function Input({
     </div>
   );
 }
-
-export default Input;

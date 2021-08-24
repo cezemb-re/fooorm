@@ -18,7 +18,7 @@ function parseError(error: Error | string): string {
 
 function checkFormFields<Fields extends FormFields = FormFields>(
   values: Partial<Fields>,
-  validate: FormValidationFunction<Fields>
+  validate: FormValidationFunction<Fields>,
 ): FormErrors<Fields> {
   try {
     const errors = validate(values);
@@ -41,7 +41,7 @@ function checkFormFields<Fields extends FormFields = FormFields>(
 
 function dispatchErrors<Fields extends FormFields = FormFields>(
   formState: FormState<Fields>,
-  errors: FormErrors<Fields>
+  errors: FormErrors<Fields>,
 ): FormState<Fields> {
   const nextState = { ...formState, errors };
 
@@ -65,7 +65,7 @@ function dispatchErrors<Fields extends FormFields = FormFields>(
 
 function dispatchWarnings<Fields extends FormFields = FormFields>(
   formState: FormState<Fields>,
-  warnings: FormErrors<Fields>
+  warnings: FormErrors<Fields>,
 ): FormState<Fields> {
   const nextState = { ...formState, warnings };
 
@@ -85,22 +85,19 @@ function dispatchWarnings<Fields extends FormFields = FormFields>(
 }
 
 function checkFieldChanges<Fields extends FormFields = FormFields>(
-  formState: FormState<Fields>
+  formState: FormState<Fields>,
 ): FormState<Fields> {
   return {
     ...formState,
-    hasChanged: Object.values(
-      formState.fields as { [key in keyof Fields]: FieldState }
-    ).reduce(
-      (hasChanged: boolean, field: FieldState) =>
-        field.hasChanged || hasChanged,
-      false
+    hasChanged: Object.values(formState.fields as { [key in keyof Fields]: FieldState }).reduce(
+      (hasChanged: boolean, field: FieldState) => field.hasChanged || hasChanged,
+      false,
     ),
   };
 }
 
 function validateForm<Fields extends FormFields = FormFields>(
-  formState: FormState<Fields>
+  formState: FormState<Fields>,
 ): FormState<Fields> {
   let nextState: FormState<Fields> = {
     ...formState,
@@ -112,10 +109,7 @@ function validateForm<Fields extends FormFields = FormFields>(
   };
 
   if (formState.validate) {
-    const errors = checkFormFields<Fields>(
-      formState.values,
-      formState.validate
-    );
+    const errors = checkFormFields<Fields>(formState.values, formState.validate);
 
     nextState = dispatchErrors<Fields>(nextState, errors);
   }
@@ -133,13 +127,10 @@ function validateForm<Fields extends FormFields = FormFields>(
   return nextState;
 }
 
-export function mountFieldAction<
-  Fields extends FormFields = FormFields,
-  Value = any
->(
+export function mountFieldAction<Fields extends FormFields = FormFields, Value = any>(
   { nbFields, fields, values, changes, ...formState }: FormState<Fields>,
   name: keyof Fields,
-  initialValue: Value
+  initialValue: Value,
 ): FormState<Fields> {
   let value: Value;
   let hasChanged = false;
@@ -187,7 +178,7 @@ export function mountFieldAction<
 
 export function focusFieldAction<Fields extends FormFields = FormFields>(
   { fields, ...formState }: FormState<Fields>,
-  name: keyof Fields
+  name: keyof Fields,
 ): FormState<Fields> {
   const field = fields[name];
 
@@ -206,13 +197,10 @@ export function focusFieldAction<Fields extends FormFields = FormFields>(
   };
 }
 
-export function changeFieldAction<
-  Value = any,
-  Fields extends FormFields = FormFields
->(
+export function changeFieldAction<Value = any, Fields extends FormFields = FormFields>(
   { fields, values, changes, ...formState }: FormState<Fields>,
   name: keyof Fields,
-  value: Value
+  value: Value,
 ): FormState<Fields> {
   const field = fields[name];
 
@@ -252,20 +240,17 @@ export function changeFieldAction<
   };
 
   if (formState.onChange) {
-    formState.onChange(
-      nextState.values as Fields,
-      nextState.changes as Partial<Fields>
-    );
+    formState.onChange(nextState.values as Fields, nextState.changes as Partial<Fields>);
   }
 
   return checkFieldChanges<Fields>(
-    formState.liveValidation ? validateForm<Fields>(nextState) : nextState
+    formState.liveValidation ? validateForm<Fields>(nextState) : nextState,
   );
 }
 
 export function blurFieldAction<Fields extends FormFields = FormFields>(
   { fields, ...formState }: FormState<Fields>,
-  name: keyof Fields
+  name: keyof Fields,
 ): FormState<Fields> {
   if (!(name in fields) || !fields[name]) {
     throw new Error('Field not found');
@@ -284,7 +269,7 @@ export function blurFieldAction<Fields extends FormFields = FormFields>(
 
 export function resetFieldAction<Fields extends FormFields = FormFields>(
   { fields, values, changes, ...formState }: FormState<Fields>,
-  name: keyof Fields
+  name: keyof Fields,
 ): FormState<Fields> {
   const field = fields[name];
 
@@ -321,19 +306,16 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
   };
 
   if (formState.onChange) {
-    formState.onChange(
-      nextState.values as Fields,
-      nextState.changes as Partial<Fields>
-    );
+    formState.onChange(nextState.values as Fields, nextState.changes as Partial<Fields>);
   }
 
   return checkFieldChanges<Fields>(
-    formState.liveValidation ? validateForm<Fields>(nextState) : nextState
+    formState.liveValidation ? validateForm<Fields>(nextState) : nextState,
   );
 }
 
 export function resetFormAction<Fields extends FormFields = FormFields>(
-  formState: FormState<Fields>
+  formState: FormState<Fields>,
 ): FormState<Fields> {
   const nextState: FormState<Fields> = {
     ...formState,
@@ -372,10 +354,7 @@ export function resetFormAction<Fields extends FormFields = FormFields>(
   });
 
   if (formState.onChange) {
-    formState.onChange(
-      nextState.values as Fields,
-      nextState.changes as Partial<Fields>
-    );
+    formState.onChange(nextState.values as Fields, nextState.changes as Partial<Fields>);
   }
 
   return formState.liveValidation ? validateForm<Fields>(nextState) : nextState;
@@ -403,16 +382,12 @@ export function startSubmitAction<Fields extends FormFields = FormFields>({
 }
 
 function parseSubmitErrors<Fields extends FormFields = FormFields>(
-  errors: FormSubmitError | FormErrors | Error | string
+  errors: FormSubmitError | FormErrors | Error | string,
 ): FormErrors<Fields> {
   if (!errors) {
     return {};
   }
-  if (
-    typeof errors === 'object' &&
-    'formErrors' in errors &&
-    errors.formErrors
-  ) {
+  if (typeof errors === 'object' && 'formErrors' in errors && errors.formErrors) {
     return errors.formErrors as FormErrors<Fields>;
   }
   if (errors instanceof Error && errors) {
@@ -429,7 +404,7 @@ function parseSubmitErrors<Fields extends FormFields = FormFields>(
 
 export function failSubmitAction<Fields extends FormFields = FormFields>(
   formState: FormState<Fields>,
-  submitErrors: FormSubmitError<Fields> | FormErrors<Fields> | Error | string
+  submitErrors: FormSubmitError<Fields> | FormErrors<Fields> | Error | string,
 ): FormState<Fields> {
   const errors = parseSubmitErrors<Fields>(submitErrors);
 
@@ -446,7 +421,7 @@ export function failSubmitAction<Fields extends FormFields = FormFields>(
 }
 
 export async function submitAction<Fields extends FormFields = FormFields>(
-  formState: FormState<Fields>
+  formState: FormState<Fields>,
 ): Promise<FormState<Fields>> {
   if (!formState.onSubmit) {
     return {
@@ -459,10 +434,7 @@ export async function submitAction<Fields extends FormFields = FormFields>(
   }
 
   if (formState.validate) {
-    const errors = checkFormFields<Fields>(
-      formState.values,
-      formState.validate
-    );
+    const errors = checkFormFields<Fields>(formState.values, formState.validate);
 
     if (Object.values(errors).length) {
       return failSubmitAction<Fields>(formState, errors);
@@ -471,7 +443,7 @@ export async function submitAction<Fields extends FormFields = FormFields>(
 
   const result = formState.onSubmit(
     formState.values as Fields,
-    formState.changes as Partial<Fields>
+    formState.changes as Partial<Fields>,
   );
 
   if (result instanceof Promise) {

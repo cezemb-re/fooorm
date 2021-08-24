@@ -48,7 +48,7 @@ function Form<Fields extends FormFields = FormFields>(
     className = undefined,
     children,
   }: FormProps<Fields>,
-  ref: Ref<FormContext<Fields>>
+  ref: Ref<FormContext<Fields>>,
 ): ReactElement {
   const [formState, setFormState] = useState<FormState<Fields>>({
     ...getDefaultFormState<Fields>(),
@@ -72,32 +72,30 @@ function Form<Fields extends FormFields = FormFields>(
 
   const mountField = useCallback(
     (name: keyof Fields, initialValue: any) =>
-      setFormState((_formState) =>
-        mountFieldAction<Fields>(_formState, name, initialValue)
-      ),
-    []
+      setFormState((_formState) => mountFieldAction<Fields>(_formState, name, initialValue)),
+    [],
   );
 
   const focusField = useCallback(
     (name: keyof Fields) => setFormState(focusFieldAction(formState, name)),
-    [formState]
+    [formState],
   );
 
   const changeField = useCallback(
     (name: keyof Fields, value: any) => {
       setFormState(changeFieldAction(formState, name, value));
     },
-    [formState]
+    [formState],
   );
 
   const blurField = useCallback(
     (name: keyof Fields) => setFormState(blurFieldAction(formState, name)),
-    [formState]
+    [formState],
   );
 
   const resetField = useCallback(
     (name: keyof Fields) => setFormState(resetFieldAction(formState, name)),
-    [formState]
+    [formState],
   );
 
   const submitForm = useCallback(
@@ -123,7 +121,7 @@ function Form<Fields extends FormFields = FormFields>(
         setFormState(failSubmitAction(formState, errors));
       }
     },
-    [formState]
+    [formState],
   );
 
   const resetForm = useCallback(() => setFormState(resetFormAction), []);
@@ -140,16 +138,7 @@ function Form<Fields extends FormFields = FormFields>(
       submitForm,
       resetForm,
     }),
-    [
-      formState,
-      mountField,
-      focusField,
-      changeField,
-      blurField,
-      resetField,
-      submitForm,
-      resetForm,
-    ]
+    [formState, mountField, focusField, changeField, blurField, resetField, submitForm, resetForm],
   );
 
   return (
@@ -165,8 +154,7 @@ function Form<Fields extends FormFields = FormFields>(
           submitForm,
           resetForm,
         } as FormContext<Fields>
-      }
-    >
+      }>
       {typeof document !== 'undefined' ? (
         <form onSubmit={submitForm} onReset={resetForm} className={className}>
           {children}
@@ -181,5 +169,5 @@ function Form<Fields extends FormFields = FormFields>(
 export default forwardRef(Form) as <Fields extends FormFields = FormFields>(
   props: FormProps<Fields> & {
     ref?: Ref<FormContext<Fields>>;
-  }
+  },
 ) => ReactElement;
