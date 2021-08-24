@@ -77,25 +77,22 @@ function Form<Fields extends FormFields = FormFields>(
   );
 
   const focusField = useCallback(
-    (name: keyof Fields) => setFormState(focusFieldAction(formState, name)),
-    [formState],
+    (name: keyof Fields) => setFormState((state) => focusFieldAction(state, name)),
+    [],
   );
 
-  const changeField = useCallback(
-    (name: keyof Fields, value: any) => {
-      setFormState(changeFieldAction(formState, name, value));
-    },
-    [formState],
-  );
+  const changeField = useCallback((name: keyof Fields, value: any) => {
+    setFormState((state) => changeFieldAction(state, name, value));
+  }, []);
 
   const blurField = useCallback(
-    (name: keyof Fields) => setFormState(blurFieldAction(formState, name)),
-    [formState],
+    (name: keyof Fields) => setFormState((state) => blurFieldAction(state, name)),
+    [],
   );
 
   const resetField = useCallback(
-    (name: keyof Fields) => setFormState(resetFieldAction(formState, name)),
-    [formState],
+    (name: keyof Fields) => setFormState((state) => resetFieldAction(state, name)),
+    [],
   );
 
   const submitForm = useCallback(
