@@ -10,7 +10,7 @@ import formContext, {
   isFormSubmitError,
   getDefaultFormState,
 } from './state';
-import Form from './form';
+import Form, { FormProps } from './form';
 import Field, { FieldComponentProps } from './field';
 
 export {
@@ -24,6 +24,7 @@ export {
 };
 
 export type {
+  FormProps,
   FormFields,
   FieldValidationFunction,
   FieldState,
