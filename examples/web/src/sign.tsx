@@ -1,6 +1,6 @@
 import { ReactElement, useCallback, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Form, Field, FormState, getDefaultFormState } from '@cezembre/form';
+import { Form, Field, FormState, getDefaultFormState } from '@cezembre/forms';
 import Input from './fields/input';
 
 export interface Fields {

@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import { FieldComponentProps } from '@cezembre/form';
+import { FieldComponentProps } from '@cezembre/forms';
 
 export default function Select({ value, onChange }: FieldComponentProps): ReactElement {
   return (

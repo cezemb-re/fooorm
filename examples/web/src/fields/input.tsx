@@ -1,5 +1,5 @@
 import { useCallback, useEffect, ChangeEvent, ReactElement } from 'react';
-import { FieldComponentProps } from '@cezembre/form';
+import { FieldComponentProps } from '@cezembre/forms';
 
 export interface Props {
   otherProp?: string;
