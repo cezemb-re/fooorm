@@ -168,9 +168,19 @@ export function mountFieldAction<Fields extends FormFields = FormFields, Value =
     delete nextChanges[name];
   }
 
+  let safeName: string | undefined;
+
+  if (typeof name === 'number') {
+    safeName = name.toString(10);
+  } else if (typeof name === 'symbol') {
+    safeName = name.toString();
+  } else {
+    safeName = name;
+  }
+
   const field: FieldState<Value> = {
     ...getDefaultFieldState<Value>(),
-    name: typeof name === 'number' ? name.toString(10) : name,
+    name: safeName,
     initialValue,
     value,
     hasChanged,
