@@ -25,7 +25,7 @@ export interface FieldProps<Value = any, Fields extends FormFields = FormFields>
   initialValue?: Value;
   component?: string | ComponentType<FieldComponentProps<Value, Fields>>;
   onChange?: (value: Value) => void;
-  children?: ReactNode[];
+  children?: ReactNode;
   [key: string]: any;
 }
 

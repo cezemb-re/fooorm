@@ -170,7 +170,7 @@ export function mountFieldAction<Fields extends FormFields = FormFields, Value =
 
   const field: FieldState<Value> = {
     ...getDefaultFieldState<Value>(),
-    name,
+    name: typeof name === 'number' ? name.toString(10) : name,
     initialValue,
     value,
     hasChanged,

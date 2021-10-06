@@ -3,7 +3,7 @@ import { createContext, SyntheticEvent, useContext } from 'react';
 export type FieldValidationFunction = (value: any) => Error | string | null | void;
 
 export interface FieldState<Value = any> {
-  name?: string | number | symbol;
+  name?: string | symbol;
   hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
