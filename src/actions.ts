@@ -163,7 +163,7 @@ export function mountFieldAction<Fields extends FormFields = FormFields, Value =
     if (!nextChanges) {
       nextChanges = {};
     }
-    Object.defineProperty(nextChanges, name, value);
+    Object.defineProperty(nextChanges, name, { value });
   } else if (nextChanges && name in nextChanges) {
     delete nextChanges[name];
   }
@@ -200,7 +200,7 @@ export function mountFieldAction<Fields extends FormFields = FormFields, Value =
       [name]: field,
     };
   } else {
-    Object.defineProperty(nextState.fields, name, field);
+    Object.defineProperty(nextState.fields, name, { value: field });
   }
 
   if (values) {
@@ -209,7 +209,7 @@ export function mountFieldAction<Fields extends FormFields = FormFields, Value =
       [name]: initialValue,
     };
   } else {
-    Object.defineProperty(nextState.values, name, initialValue);
+    Object.defineProperty(nextState.values, name, { value: initialValue });
   }
 
   return checkFieldChanges<Fields>(validateForm<Fields>(nextState));
@@ -261,7 +261,7 @@ export function changeFieldAction<Value = any, Fields extends FormFields = FormF
     if (!nextChanges) {
       nextChanges = {};
     }
-    Object.defineProperty(nextChanges, name, value);
+    Object.defineProperty(nextChanges, name, { value });
   } else if (nextChanges && name in nextChanges) {
     delete nextChanges[name];
   }
@@ -289,7 +289,7 @@ export function changeFieldAction<Value = any, Fields extends FormFields = FormF
     };
   } else {
     nextState.values = {};
-    Object.defineProperty(nextState.values, name, value);
+    Object.defineProperty(nextState.values, name, { value });
   }
 
   if (formState.onChange) {
@@ -371,7 +371,7 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
     };
   } else {
     nextState.values = {};
-    Object.defineProperty(nextState.values, name, field.initialValue);
+    Object.defineProperty(nextState.values, name, { value: field.initialValue });
   }
 
   if (formState.onChange) {
@@ -427,7 +427,7 @@ export function resetFormAction<Fields extends FormFields = FormFields>({
           nextState.values[name] = field.initialValue;
         } else {
           nextState.values = {};
-          Object.defineProperty(nextState.values, name, field.initialValue);
+          Object.defineProperty(nextState.values, name, { value: field.initialValue });
         }
       },
     );
@@ -454,7 +454,7 @@ export function startSubmitAction<Fields extends FormFields = FormFields>({
 
   if (nextState.fields) {
     Object.keys(nextState.fields).forEach((name: keyof Fields) => {
-      Object.defineProperty(nextState.fields, name, true);
+      Object.defineProperty(nextState.fields, name, { value: true });
     });
   }
 
