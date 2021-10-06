@@ -24,6 +24,7 @@ export interface FieldProps<Value = any, Fields extends FormFields = FormFields>
   name: keyof Fields;
   initialValue?: Value;
   component?: string | ComponentType<FieldComponentProps<Value, Fields>>;
+  onChange?: (value: Value) => void;
   children?: ReactNode[];
   [key: string]: any;
 }
@@ -32,6 +33,7 @@ export default function Field<Value = any, Fields extends FormFields = FormField
   name,
   initialValue,
   component,
+  onChange,
   children,
   ...customProps
 }: FieldProps<Value, Fields>): ReactElement | null {
@@ -52,8 +54,9 @@ export default function Field<Value = any, Fields extends FormFields = FormField
     focusField(name);
   }, [focusField, name]);
 
-  const onChange = useCallback(
+  const change = useCallback(
     (eventOrValue: ChangeEvent<{ value: Value }> | Value) => {
+      let value: Value;
       if (
         typeof eventOrValue === 'object' &&
         eventOrValue &&
@@ -61,7 +64,7 @@ export default function Field<Value = any, Fields extends FormFields = FormField
         eventOrValue.target &&
         'value' in eventOrValue.target
       ) {
-        changeField(name, eventOrValue.target.value);
+        value = eventOrValue.target.value;
       } else if (
         typeof eventOrValue === 'object' &&
         eventOrValue &&
@@ -69,12 +72,16 @@ export default function Field<Value = any, Fields extends FormFields = FormField
         eventOrValue.currentTarget &&
         'value' in eventOrValue.currentTarget
       ) {
-        changeField(name, eventOrValue.currentTarget.value);
+        value = eventOrValue.currentTarget.value;
       } else {
-        changeField(name, eventOrValue);
+        value = eventOrValue as Value;
+      }
+      changeField(name, value);
+      if (onChange) {
+        onChange(value);
       }
     },
-    [changeField, name],
+    [changeField, name, onChange],
   );
 
   const onBlur = useCallback(() => {
@@ -93,7 +100,7 @@ export default function Field<Value = any, Fields extends FormFields = FormField
         ...formState.fields[name],
         form: formState,
         onFocus,
-        onChange,
+        onChange: change,
         onBlur,
       },
       children,
@@ -105,7 +112,7 @@ export default function Field<Value = any, Fields extends FormFields = FormField
     name,
     value: formState.fields[name]?.value,
     onFocus,
-    onChange,
+    onChange: change,
     onBlur,
   });
 }

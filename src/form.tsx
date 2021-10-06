@@ -115,7 +115,7 @@ function Form<Fields extends FormFields = FormFields>(
 
         setFormState(nextState);
       } catch (errors) {
-        setFormState(failSubmitAction(formState, errors));
+        setFormState(failSubmitAction(formState, errors as Error));
       }
     },
     [formState],

@@ -1,10 +1,12 @@
 import { ReactElement, useCallback, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { Form, Field, FormState, getDefaultFormState } from '@cezembre/forms';
+import { Form, Field, FormState, getDefaultFormState, FormErrors } from '@cezembre/forms';
 import Input from './fields/input';
+import { Select } from '@cezembre/ui';
 
 export interface Fields {
-  email: string;
+  name?: string;
+  other?: string;
+  text?: string;
 }
 
 export default function Sign(): ReactElement {
@@ -16,21 +18,30 @@ export default function Sign(): ReactElement {
     }
   }, []);
 
-  const history = useHistory();
+  const onSubmit = useCallback((fields: Fields) => {
+    console.log(fields);
+  }, []);
 
-  const onSubmit = useCallback(
-    (fields: Fields) => {
-      console.log(fields);
-      if (fields.email && fields.email.length) {
-        history.push({ pathname: '/profile' });
-      }
-    },
-    [history],
-  );
+  const validate = useCallback((body: Fields): FormErrors<Fields> => {
+    const errors: FormErrors<Fields> = {};
+
+    if (!body.name) {
+      errors.name = 'Entrez un nom';
+    }
+
+    return errors;
+  }, []);
 
   return (
-    <Form<Fields> ref={form} onSubmit={onSubmit}>
-      <Field name="email" component={Input} initialValue={undefined} />
+    <Form<Fields> ref={form} onSubmit={onSubmit} validate={validate}>
+      <br />
+      <Field name="name" component={Input} label="Name" />
+      <br />
+      <Field name="other" component={Input} label="Other" />
+      <br />
+      <Field name="text" component={Select} label="Text" />
+      <br />
+      <br />
 
       <input type="submit" value="Submit" />
       <input type="reset" value="Reset" />

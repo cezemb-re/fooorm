@@ -1,41 +1,29 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "target": "ES2019",
+    "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
-    "outDir": "build",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowJs": true,
-    "isolatedModules": true,
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "alwaysStrict": true,
-    "sourceMap": true,
-    "esModuleInterop": true,
     "jsx": "react-jsx",
+    "declaration": true,
+    "allowJs": true,
+    "removeComments": false,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "outDir": "./dist",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
-    "types": [
-      "react-scripts"
-    ],
-    "noEmit": true,
-    "noFallthroughCasesInSwitch": true
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
   },
-  "exclude": [
-    "node_modules"
-  ],
-  "lib": [
-    "es2016",
-    "dom"
-  ],
   "include": [
-    "src/**/*"
+    "./src"
   ]
 }

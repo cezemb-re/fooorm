@@ -1,4 +1,4 @@
-import { useCallback, useEffect, ChangeEvent, ReactElement } from 'react';
+import { useCallback, ChangeEvent, ReactElement } from 'react';
 import { FieldComponentProps } from '@cezembre/forms';
 
 export interface Props {
@@ -8,7 +8,7 @@ export interface Props {
 export type Adapter = (event: ChangeEvent<HTMLInputElement>) => any;
 export type Resolver = (value: any) => string | number;
 
-const defaultAdapter: Adapter = (event: React.ChangeEvent<HTMLInputElement>): string =>
+const defaultAdapter: Adapter = (event: ChangeEvent<HTMLInputElement>): string =>
   event?.target?.value || '';
 
 const defaultResolver: Resolver = (value: any): string | number => {
@@ -39,10 +39,6 @@ export default function Input({
     [onChange],
   );
 
-  useEffect(() => {
-    console.log('Mount field !');
-  }, []);
-
   return (
     <div>
       <label htmlFor={name}>{name}</label>
@@ -53,6 +49,15 @@ export default function Input({
         onChange={customOnChange}
         onBlur={onBlur}
       />
+      <br />
+      visited: {visited ? 'yes' : 'no'}
+      <br />
+      submitted: {submitted ? 'yes' : 'no'}
+      <br />
+      isActive: {isActive ? 'yes' : 'no'}
+      <br />
+      {(visited || submitted) && !isActive && error ? <p>error: {error}</p> : null}
+      {warning && <p>warning: {warning}</p>}
     </div>
   );
 }

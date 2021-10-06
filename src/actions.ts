@@ -35,7 +35,7 @@ function checkFormFields<Fields extends FormFields = FormFields>(
 
     return errors;
   } catch (error) {
-    return { _global: parseError(error) };
+    return { _global: parseError(error as Error) };
   }
 }
 
