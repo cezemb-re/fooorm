@@ -3,30 +3,21 @@ import { createContext, SyntheticEvent, useContext } from 'react';
 export type FieldValidationFunction = (value: any) => Error | string | null | void;
 
 export interface FieldState<Value = any> {
-  name?: string;
-  initialValue: Value;
-  value: Value;
+  name?: string | number | symbol;
   hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
   visited: boolean;
   submitted: boolean;
-  error: string | null;
-  warning: string | null;
+  initialValue?: Value;
+  value?: Value;
+  error?: string;
+  warning?: string;
 }
 
-export const defaultFieldState: FieldState = {
-  name: undefined,
-  initialValue: undefined,
-  value: undefined,
-  hasChanged: false,
-  isValid: true,
-  isActive: false,
-  visited: false,
-  submitted: false,
-  error: null,
-  warning: null,
-};
+export function getDefaultFieldState<Value = any>(): FieldState<Value> {
+  return { hasChanged: false, isValid: true, isActive: false, visited: false, submitted: false };
+}
 
 export interface FormFields {
   [key: string]: any;
@@ -68,17 +59,17 @@ export interface FormState<Fields extends FormFields = FormFields> {
   isActive: boolean;
   visited: boolean;
   isSubmitting: boolean;
-  submitSucceeded: boolean;
-  submitFailed: boolean;
   submitCounter: number;
-  values: Partial<Fields>;
-  changes: Partial<Fields>;
-  fields: { [key in keyof Fields]?: FieldState };
-  errors: FormErrors<Fields>;
-  error: string | null;
-  warning: string | null;
-  warnings: FormErrors<Fields>;
-  liveValidation: boolean;
+  submitSucceeded?: boolean;
+  submitFailed?: boolean;
+  liveValidation?: boolean;
+  values?: Partial<Fields>;
+  changes?: Partial<Fields>;
+  fields?: { [key in keyof Fields]?: FieldState };
+  errors?: FormErrors<Fields>;
+  error?: string;
+  warning?: string;
+  warnings?: FormErrors<Fields>;
   onSubmit?: FormSubmitFunction<Fields> | null;
   onChange?: FormSubmitFunction<Fields> | null;
   validate?: FormValidationFunction<Fields> | null;
@@ -91,19 +82,9 @@ export function getDefaultFormState<Fields extends FormFields = FormFields>(): F
     hasChanged: false,
     isValid: true,
     isSubmitting: false,
-    submitSucceeded: false,
-    submitFailed: false,
     isActive: false,
     visited: false,
     submitCounter: 0,
-    values: {},
-    changes: {},
-    fields: {},
-    errors: {},
-    error: null,
-    warning: null,
-    warnings: {},
-    liveValidation: false,
   };
 }
 

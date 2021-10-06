@@ -88,7 +88,7 @@ export default function Field<Value = any, Fields extends FormFields = FormField
     blurField(name);
   }, [blurField, name]);
 
-  if (!(name in formState.fields)) {
+  if (!formState.fields || !(name in formState.fields)) {
     return null;
   }
 

@@ -1,12 +1,13 @@
 import isEqual from 'lodash.isequal';
 import {
-  defaultFieldState,
   FieldState,
   FormErrors,
   FormFields,
   FormState,
   FormSubmitError,
   FormValidationFunction,
+  getDefaultFieldState,
+  getDefaultFormState,
 } from './state';
 
 function parseError(error: Error | string): string {
@@ -17,9 +18,13 @@ function parseError(error: Error | string): string {
 }
 
 function checkFormFields<Fields extends FormFields = FormFields>(
-  values: Partial<Fields>,
-  validate: FormValidationFunction<Fields>,
-): FormErrors<Fields> {
+  values?: Partial<Fields>,
+  validate?: FormValidationFunction<Fields>,
+): FormErrors<Fields> | undefined {
+  if (!values || !validate) {
+    return undefined;
+  }
+
   try {
     const errors = validate(values);
 
@@ -43,20 +48,22 @@ function dispatchErrors<Fields extends FormFields = FormFields>(
   formState: FormState<Fields>,
   errors: FormErrors<Fields>,
 ): FormState<Fields> {
-  const nextState = { ...formState, errors };
+  const nextState: FormState<Fields> = { ...formState, errors };
 
-  Object.keys(errors).forEach((field: keyof Fields) => {
-    nextState.errors[field] = errors[field];
-
-    if (field === '_global' && errors._global) {
-      nextState.error = errors._global;
-    } else if (field in nextState.fields) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      nextState.fields[field].error = errors[field];
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      nextState.fields[field].isValid = false;
+  Object.entries(errors).forEach(([field, error]: [keyof Fields, string | undefined]) => {
+    if (!error || !nextState.errors) {
+      return;
+    }
+    if (field === '_global' && error) {
+      nextState.error = error;
+    } else if (nextState.fields && field in nextState.fields) {
+      const nextField: FieldState | undefined = nextState.fields[field];
+      if (nextField) {
+        nextState.fields = {
+          ...nextState.fields,
+          [field]: { ...nextField, isValid: false, error },
+        };
+      }
     }
   });
 
@@ -74,7 +81,7 @@ function dispatchWarnings<Fields extends FormFields = FormFields>(
 
     if (field === '_global' && warnings._global) {
       nextState.warning = warnings._global;
-    } else if (field in nextState.fields) {
+    } else if (nextState.fields && field in nextState.fields) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       nextState.fields[field].warning = warnings[field];
@@ -101,26 +108,30 @@ function validateForm<Fields extends FormFields = FormFields>(
 ): FormState<Fields> {
   let nextState: FormState<Fields> = {
     ...formState,
-    errors: {},
-    error: null,
-    warnings: {},
-    warning: null,
+    errors: undefined,
+    error: undefined,
+    warnings: undefined,
+    warning: undefined,
     isValid: true,
   };
 
   if (formState.validate) {
     const errors = checkFormFields<Fields>(formState.values, formState.validate);
 
-    nextState = dispatchErrors<Fields>(nextState, errors);
+    if (errors) {
+      nextState = dispatchErrors<Fields>(nextState, errors);
+    }
   }
 
   if (formState.warn) {
     const warnings = checkFormFields<Fields>(formState.values, formState.warn);
 
-    nextState = dispatchWarnings<Fields>(nextState, warnings);
+    if (warnings) {
+      nextState = dispatchWarnings<Fields>(nextState, warnings);
+    }
   }
 
-  if (Object.keys(nextState.errors).length) {
+  if (nextState.errors && Object.keys(nextState.errors).length) {
     nextState.isValid = false;
   }
 
@@ -135,43 +146,61 @@ export function mountFieldAction<Fields extends FormFields = FormFields, Value =
   let value: Value;
   let hasChanged = false;
 
-  const field = fields[name];
-
-  if (field !== undefined && isEqual(field.initialValue, initialValue)) {
-    value = field.value;
-    hasChanged = field.hasChanged;
+  if (
+    fields &&
+    name in fields &&
+    fields[name] !== undefined &&
+    isEqual(fields[name]?.initialValue, initialValue)
+  ) {
+    value = fields[name]?.value;
+    hasChanged = fields[name]?.hasChanged || false;
   } else {
     value = initialValue;
   }
 
-  const nextChanges = { ...changes };
+  let nextChanges: Partial<Fields> | undefined = changes ? { ...changes } : undefined;
   if (hasChanged) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    nextChanges[name] = value;
-  } else if (name in nextChanges) {
+    if (!nextChanges) {
+      nextChanges = {};
+    }
+    Object.defineProperty(nextChanges, name, value);
+  } else if (nextChanges && name in nextChanges) {
     delete nextChanges[name];
   }
 
-  const nextState = {
+  const field: FieldState<Value> = {
+    ...getDefaultFieldState<Value>(),
+    name,
+    initialValue,
+    value,
+    hasChanged,
+  };
+
+  const nextState: FormState<Fields> = {
     ...formState,
-    nbFields: name in fields ? nbFields : nbFields + 1,
-    fields: {
-      ...fields,
-      [name]: {
-        ...defaultFieldState,
-        name,
-        initialValue,
-        value,
-        hasChanged,
-      },
-    },
-    values: {
-      ...values,
-      [name]: initialValue,
-    },
+    nbFields: fields && name in fields ? nbFields : (nbFields || 0) + 1,
+    fields: {},
+    values: {},
     changes: nextChanges,
   };
+
+  if (fields) {
+    nextState.fields = {
+      ...fields,
+      [name]: field,
+    };
+  } else {
+    Object.defineProperty(nextState.fields, name, field);
+  }
+
+  if (values) {
+    nextState.values = {
+      ...values,
+      [name]: initialValue,
+    };
+  } else {
+    Object.defineProperty(nextState.values, name, initialValue);
+  }
 
   return checkFieldChanges<Fields>(validateForm<Fields>(nextState));
 }
@@ -180,6 +209,9 @@ export function focusFieldAction<Fields extends FormFields = FormFields>(
   { fields, ...formState }: FormState<Fields>,
   name: keyof Fields,
 ): FormState<Fields> {
+  if (!fields) {
+    throw new Error('No fields !');
+  }
   const field = fields[name];
 
   if (!field) {
@@ -202,6 +234,10 @@ export function changeFieldAction<Value = any, Fields extends FormFields = FormF
   name: keyof Fields,
   value: Value,
 ): FormState<Fields> {
+  if (!fields) {
+    throw new Error('No fields !');
+  }
+
   const field = fields[name];
 
   if (!field) {
@@ -210,12 +246,13 @@ export function changeFieldAction<Value = any, Fields extends FormFields = FormF
 
   const hasChanged = !isEqual(value, field.initialValue);
 
-  const nextChanges = { ...changes };
+  let nextChanges: Partial<Fields> | undefined = changes ? { ...changes } : undefined;
   if (hasChanged) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    nextChanges[name] = value;
-  } else if (name in nextChanges) {
+    if (!nextChanges) {
+      nextChanges = {};
+    }
+    Object.defineProperty(nextChanges, name, value);
+  } else if (nextChanges && name in nextChanges) {
     delete nextChanges[name];
   }
 
@@ -232,12 +269,18 @@ export function changeFieldAction<Value = any, Fields extends FormFields = FormF
         value,
       },
     },
-    values: {
-      ...values,
-      [name]: value,
-    },
     changes: nextChanges,
   };
+
+  if (values) {
+    nextState.values = {
+      ...values,
+      [name]: value,
+    };
+  } else {
+    nextState.values = {};
+    Object.defineProperty(nextState.values, name, value);
+  }
 
   if (formState.onChange) {
     formState.onChange(nextState.values as Fields, nextState.changes as Partial<Fields>);
@@ -252,7 +295,13 @@ export function blurFieldAction<Fields extends FormFields = FormFields>(
   { fields, ...formState }: FormState<Fields>,
   name: keyof Fields,
 ): FormState<Fields> {
-  if (!(name in fields) || !fields[name]) {
+  if (!fields) {
+    throw new Error('No fields !');
+  }
+
+  const field = fields[name];
+
+  if (!field) {
     throw new Error('Field not found');
   }
   const nextState = {
@@ -260,7 +309,7 @@ export function blurFieldAction<Fields extends FormFields = FormFields>(
     isActive: false,
     fields: {
       ...fields,
-      [name]: { ...fields[name], isActive: false },
+      [name]: { ...field, isActive: false },
     },
   };
 
@@ -271,15 +320,19 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
   { fields, values, changes, ...formState }: FormState<Fields>,
   name: keyof Fields,
 ): FormState<Fields> {
+  if (!fields) {
+    throw new Error('No fields !');
+  }
+
   const field = fields[name];
 
   if (!field) {
     throw new Error('Field not found');
   }
 
-  const nextChanges = { ...changes };
+  const nextChanges: Partial<Fields> | undefined = changes ? { ...changes } : undefined;
 
-  if (name in changes) {
+  if (nextChanges && name in nextChanges) {
     delete nextChanges[name];
   }
 
@@ -298,12 +351,18 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
         submitError: null,
       },
     },
-    values: {
-      ...values,
-      [name]: field.initialValue,
-    },
     changes: nextChanges,
   };
+
+  if (values) {
+    nextState.values = {
+      ...values,
+      [name]: field.initialValue,
+    };
+  } else {
+    nextState.values = {};
+    Object.defineProperty(nextState.values, name, field.initialValue);
+  }
 
   if (formState.onChange) {
     formState.onChange(nextState.values as Fields, nextState.changes as Partial<Fields>);
@@ -314,44 +373,55 @@ export function resetFieldAction<Fields extends FormFields = FormFields>(
   );
 }
 
-export function resetFormAction<Fields extends FormFields = FormFields>(
-  formState: FormState<Fields>,
-): FormState<Fields> {
+export function resetFormAction<Fields extends FormFields = FormFields>({
+  submitCounter,
+  hasChanged,
+  isSubmitting,
+  isValid,
+  submitSucceeded,
+  submitFailed,
+  errors,
+  error,
+  warnings,
+  warning,
+  changes,
+  ...formState
+}: FormState<Fields>): FormState<Fields> {
   const nextState: FormState<Fields> = {
+    ...getDefaultFormState<Fields>(),
     ...formState,
-    submitCounter: 0,
-    hasChanged: false,
-    isSubmitting: false,
-    isValid: true,
-    submitSucceeded: false,
-    submitFailed: false,
-    errors: {},
-    error: null,
-    warnings: {},
-    warning: null,
-    changes: {},
   };
 
-  Object.keys(formState.fields).forEach((name: keyof Fields) => {
-    const field = formState.fields[name];
+  if (formState.fields) {
+    Object.entries(formState.fields).forEach(
+      ([name, field]: [keyof Fields, FieldState | undefined]) => {
+        if (!field) {
+          return;
+        }
 
-    if (!field) {
-      throw new Error('Field not found');
-    }
+        if (!nextState.fields) {
+          throw new Error('No fields mounted !');
+        }
 
-    nextState.fields[name] = {
-      ...formState.fields[name],
-      hasChanged: false,
-      isValid: true,
-      submitted: false,
-      value: field.initialValue,
-      error: null,
-      warning: null,
-      submitError: null,
-    };
+        nextState.fields[name] = {
+          ...field,
+          hasChanged: false,
+          isValid: true,
+          submitted: false,
+          value: field.initialValue,
+          error: undefined,
+          warning: undefined,
+        };
 
-    nextState.values[name] = field.initialValue;
-  });
+        if (nextState.values) {
+          nextState.values[name] = field.initialValue;
+        } else {
+          nextState.values = {};
+          Object.defineProperty(nextState.values, name, field.initialValue);
+        }
+      },
+    );
+  }
 
   if (formState.onChange) {
     formState.onChange(nextState.values as Fields, nextState.changes as Partial<Fields>);
@@ -372,11 +442,11 @@ export function startSubmitAction<Fields extends FormFields = FormFields>({
     submitCounter: submitCounter + 1,
   };
 
-  Object.keys(nextState.fields).forEach((name: keyof Fields) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    nextState.fields[name].submitted = true;
-  });
+  if (nextState.fields) {
+    Object.keys(nextState.fields).forEach((name: keyof Fields) => {
+      Object.defineProperty(nextState.fields, name, true);
+    });
+  }
 
   return nextState;
 }
@@ -408,7 +478,7 @@ export function failSubmitAction<Fields extends FormFields = FormFields>(
 ): FormState<Fields> {
   const errors = parseSubmitErrors<Fields>(submitErrors);
 
-  let nextState = {
+  let nextState: FormState<Fields> = {
     ...formState,
     isSubmitting: false,
     submitSucceeded: false,
@@ -436,7 +506,7 @@ export async function submitAction<Fields extends FormFields = FormFields>(
   if (formState.validate) {
     const errors = checkFormFields<Fields>(formState.values, formState.validate);
 
-    if (Object.values(errors).length) {
+    if (errors && Object.values(errors).length) {
       return failSubmitAction<Fields>(formState, errors);
     }
   }
@@ -448,9 +518,10 @@ export async function submitAction<Fields extends FormFields = FormFields>(
 
   if (result instanceof Promise) {
     await result;
-  } else if (result) {
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
+  } else if (result && result instanceof Error) {
     throw result;
+  } else if (result) {
+    throw new FormSubmitError(result);
   }
 
   return {
