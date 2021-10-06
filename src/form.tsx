@@ -28,17 +28,17 @@ import {
   failSubmitAction,
 } from './actions';
 
-export interface FormProps<Fields extends FormFields = FormFields> {
-  onSubmit?: FormSubmitFunction<Fields>;
-  onChange?: FormSubmitFunction<Fields>;
-  validate?: FormValidationFunction<Fields>;
-  warn?: FormValidationFunction<Fields>;
+export interface FormProps<F extends FormFields = FormFields> {
+  onSubmit?: FormSubmitFunction<F>;
+  onChange?: FormSubmitFunction<F>;
+  validate?: FormValidationFunction<F>;
+  warn?: FormValidationFunction<F>;
   liveValidation?: boolean;
   className?: string;
   children?: any;
 }
 
-function Form<Fields extends FormFields = FormFields>(
+function Form<F extends FormFields = FormFields>(
   {
     onSubmit,
     onChange,
@@ -47,11 +47,11 @@ function Form<Fields extends FormFields = FormFields>(
     liveValidation = false,
     className = undefined,
     children,
-  }: FormProps<Fields>,
-  ref: Ref<FormContext<Fields>>,
+  }: FormProps<F>,
+  ref: Ref<FormContext<F>>,
 ): ReactElement {
-  const [formState, setFormState] = useState<FormState<Fields>>({
-    ...getDefaultFormState<Fields>(),
+  const [formState, setFormState] = useState<FormState<F>>({
+    ...getDefaultFormState<F>(),
     onSubmit,
     onChange,
     validate,
@@ -71,27 +71,27 @@ function Form<Fields extends FormFields = FormFields>(
   }, [onSubmit, onChange, validate, warn, liveValidation]);
 
   const mountField = useCallback(
-    (name: keyof Fields, initialValue: any) =>
-      setFormState((_formState) => mountFieldAction<Fields>(_formState, name, initialValue)),
+    (name: keyof F, initialValue: any) =>
+      setFormState((state) => mountFieldAction<F>(state, name, initialValue)),
     [],
   );
 
   const focusField = useCallback(
-    (name: keyof Fields) => setFormState((state) => focusFieldAction(state, name)),
+    (name: keyof F) => setFormState((state) => focusFieldAction(state, name)),
     [],
   );
 
-  const changeField = useCallback((name: keyof Fields, value: any) => {
+  const changeField = useCallback((name: keyof F, value: any) => {
     setFormState((state) => changeFieldAction(state, name, value));
   }, []);
 
   const blurField = useCallback(
-    (name: keyof Fields) => setFormState((state) => blurFieldAction(state, name)),
+    (name: keyof F) => setFormState((state) => blurFieldAction(state, name)),
     [],
   );
 
   const resetField = useCallback(
-    (name: keyof Fields) => setFormState((state) => resetFieldAction(state, name)),
+    (name: keyof F) => setFormState((state) => resetFieldAction(state, name)),
     [],
   );
 
@@ -123,7 +123,7 @@ function Form<Fields extends FormFields = FormFields>(
 
   const resetForm = useCallback(() => setFormState(resetFormAction), []);
 
-  useImperativeHandle<FormContext<Fields>, FormContext<Fields>>(
+  useImperativeHandle<FormContext<F>, FormContext<F>>(
     ref,
     () => ({
       formState,
@@ -150,7 +150,7 @@ function Form<Fields extends FormFields = FormFields>(
           resetField,
           submitForm,
           resetForm,
-        } as FormContext<Fields>
+        } as FormContext<F>
       }>
       {typeof document !== 'undefined' ? (
         <form onSubmit={submitForm} onReset={resetForm} className={className}>
@@ -163,8 +163,8 @@ function Form<Fields extends FormFields = FormFields>(
   );
 }
 
-export default forwardRef(Form) as <Fields extends FormFields = FormFields>(
-  props: FormProps<Fields> & {
-    ref?: Ref<FormContext<Fields>>;
+export default forwardRef(Form) as <F extends FormFields = FormFields>(
+  props: FormProps<F> & {
+    ref?: Ref<FormContext<F>>;
   },
 ) => ReactElement;

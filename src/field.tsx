@@ -11,36 +11,36 @@ import {
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
 
-export interface FieldComponentProps<Value = any, Fields extends FormFields = FormFields>
-  extends Partial<FieldState<Value>> {
-  form: FormState<Fields>;
+export interface FieldComponentProps<V = any, F extends FormFields = FormFields>
+  extends Partial<FieldState<V>> {
+  form: FormState<F>;
   onFocus: () => void;
-  onChange: (eventOrValue: ChangeEvent<{ value: Value }> | Value) => void;
+  onChange: (eventOrValue: ChangeEvent<{ value: V }> | V) => void;
   onBlur: () => void;
   [key: string]: any; // Custom Props
 }
 
-export interface FieldProps<Value = any, Fields extends FormFields = FormFields> {
-  name: keyof Fields;
-  initialValue?: Value;
-  component?: string | ComponentType<FieldComponentProps<Value, Fields>>;
-  onChange?: (value: Value) => void;
+export interface FieldProps<V = any, F extends FormFields = FormFields> {
+  name: keyof F;
+  initialValue?: V;
+  component?: string | ComponentType<FieldComponentProps<V, F>>;
+  onChange?: (value: V) => void;
   children?: ReactNode;
   [key: string]: any;
 }
 
-export default function Field<Value = any, Fields extends FormFields = FormFields>({
+export default function Field<V = any, F extends FormFields = FormFields>({
   name,
   initialValue,
   component,
   onChange,
   children,
   ...customProps
-}: FieldProps<Value, Fields>): ReactElement | null {
-  const memoizedName = useRef<keyof Fields>();
-  const memoizedInitialValue = useRef<Value>();
+}: FieldProps<V, F>): ReactElement | null {
+  const memoizedName = useRef<keyof F>();
+  const memoizedInitialValue = useRef<V>();
 
-  const { formState, mountField, focusField, changeField, blurField } = useFormContext<Fields>();
+  const { formState, mountField, focusField, changeField, blurField } = useFormContext<F>();
 
   useEffect(() => {
     if (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue)) {
@@ -55,8 +55,8 @@ export default function Field<Value = any, Fields extends FormFields = FormField
   }, [focusField, name]);
 
   const change = useCallback(
-    (eventOrValue: ChangeEvent<{ value: Value }> | Value) => {
-      let value: Value;
+    (eventOrValue: ChangeEvent<{ value: V }> | V) => {
+      let value: V;
       if (
         typeof eventOrValue === 'object' &&
         eventOrValue &&
@@ -74,7 +74,7 @@ export default function Field<Value = any, Fields extends FormFields = FormField
       ) {
         value = eventOrValue.currentTarget.value;
       } else {
-        value = eventOrValue as Value;
+        value = eventOrValue as V;
       }
       changeField(name, value);
       if (onChange) {
@@ -93,7 +93,7 @@ export default function Field<Value = any, Fields extends FormFields = FormField
   }
 
   if (component) {
-    return createElement<FieldComponentProps<Value, Fields>>(
+    return createElement<FieldComponentProps<V, F>>(
       component,
       {
         ...customProps,

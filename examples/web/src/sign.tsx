@@ -25,21 +25,17 @@ export default function Sign(): ReactElement {
   const validate = useCallback((body: Fields): FormErrors<Fields> => {
     const errors: FormErrors<Fields> = {};
 
-    if (!body.name) {
-      errors.name = 'Entrez un nom';
-    }
-
     return errors;
   }, []);
 
   return (
     <Form<Fields> ref={form} onSubmit={onSubmit} validate={validate}>
       <br />
-      <Field name="name" component={Input} label="Name" />
+      <Field name="league" component={Input} label="League" />
       <br />
-      <Field name="other" component={Input} label="Other" />
+      <Field name="club" component={Input} label="Club" />
       <br />
-      <Field name="text" component={Select} label="Text" />
+      <Field name="player" component={Input} label="Player" />
       <br />
       <br />
 
