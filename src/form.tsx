@@ -7,6 +7,8 @@ import {
   useEffect,
   Ref,
   ReactElement,
+  ReactNode,
+  Context,
 } from 'react';
 import formContext, {
   FormState,
@@ -35,20 +37,12 @@ export interface FormProps<F extends FormFields = FormFields> {
   warn?: FormValidationFunction<F>;
   liveValidation?: boolean;
   className?: string;
-  children?: any;
+  children?: ReactNode;
 }
 
-function Form<F extends FormFields = FormFields>(
-  {
-    onSubmit,
-    onChange,
-    validate,
-    warn,
-    liveValidation = false,
-    className = undefined,
-    children,
-  }: FormProps<F>,
-  ref: Ref<FormContext<F>>,
+function Form<F extends FormFields = FormFields, V = unknown>(
+  { onSubmit, onChange, validate, warn, liveValidation = false, className, children }: FormProps<F>,
+  ref: Ref<FormContext<F, V>>,
 ): ReactElement {
   const [formState, setFormState] = useState<FormState<F>>({
     ...getDefaultFormState<F>(),
@@ -71,7 +65,7 @@ function Form<F extends FormFields = FormFields>(
   }, [onSubmit, onChange, validate, warn, liveValidation]);
 
   const mountField = useCallback(
-    (name: keyof F, initialValue: any) =>
+    (name: keyof F, initialValue: unknown) =>
       setFormState((state) => mountFieldAction<F>(state, name, initialValue)),
     [],
   );
@@ -81,7 +75,7 @@ function Form<F extends FormFields = FormFields>(
     [],
   );
 
-  const changeField = useCallback((name: keyof F, value: any) => {
+  const changeField = useCallback((name: keyof F, value: unknown) => {
     setFormState((state) => changeFieldAction(state, name, value));
   }, []);
 
@@ -123,7 +117,7 @@ function Form<F extends FormFields = FormFields>(
 
   const resetForm = useCallback(() => setFormState(resetFormAction), []);
 
-  useImperativeHandle<FormContext<F>, FormContext<F>>(
+  useImperativeHandle<FormContext<F, V>, FormContext<F, V>>(
     ref,
     () => ({
       formState,
@@ -138,20 +132,20 @@ function Form<F extends FormFields = FormFields>(
     [formState, mountField, focusField, changeField, blurField, resetField, submitForm, resetForm],
   );
 
+  const context = formContext as Context<FormContext<F, V>>;
+
   return (
-    <formContext.Provider
-      value={
-        {
-          formState,
-          mountField,
-          focusField,
-          changeField,
-          blurField,
-          resetField,
-          submitForm,
-          resetForm,
-        } as FormContext<F>
-      }>
+    <context.Provider
+      value={{
+        formState,
+        mountField,
+        focusField,
+        changeField,
+        blurField,
+        resetField,
+        submitForm,
+        resetForm,
+      }}>
       {typeof document !== 'undefined' ? (
         <form onSubmit={submitForm} onReset={resetForm} className={className}>
           {children}
@@ -159,12 +153,12 @@ function Form<F extends FormFields = FormFields>(
       ) : (
         children
       )}
-    </formContext.Provider>
+    </context.Provider>
   );
 }
 
-export default forwardRef(Form) as <F extends FormFields = FormFields>(
+export default forwardRef(Form) as <F extends FormFields = FormFields, V = unknown>(
   props: FormProps<F> & {
-    ref?: Ref<FormContext<F>>;
+    ref?: Ref<FormContext<F, V>>;
   },
 ) => ReactElement;

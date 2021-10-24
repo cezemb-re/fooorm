@@ -150,7 +150,7 @@ export function getSafeName<F extends FormFields = FormFields>(name: keyof F): s
   return name;
 }
 
-export function mountFieldAction<F extends FormFields = FormFields, Value = any>(
+export function mountFieldAction<F extends FormFields = FormFields, Value = unknown>(
   state: FormState<F>,
   name: keyof F,
   initialValue: Value,
@@ -230,7 +230,7 @@ export function focusFieldAction<F extends FormFields = FormFields>(
   return nextState;
 }
 
-export function changeFieldAction<Value = any, F extends FormFields = FormFields>(
+export function changeFieldAction<Value = unknown, F extends FormFields = FormFields>(
   state: FormState<F>,
   name: keyof F,
   value: Value,

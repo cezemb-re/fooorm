@@ -11,25 +11,25 @@ import {
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
 
-export interface FieldComponentProps<V = any, F extends FormFields = FormFields>
+export interface FieldComponentProps<V = unknown, F extends FormFields = FormFields>
   extends Partial<FieldState<V>> {
   form: FormState<F>;
   onFocus: () => void;
   onChange: (eventOrValue: ChangeEvent<{ value: V }> | V) => void;
   onBlur: () => void;
-  [key: string]: any; // Custom Props
+  [key: string]: unknown; // Custom Props
 }
 
-export interface FieldProps<V = any, F extends FormFields = FormFields> {
+export interface FieldProps<V = unknown, F extends FormFields = FormFields> {
   name: keyof F;
   initialValue?: V;
   component?: string | ComponentType<FieldComponentProps<V, F>>;
   onChange?: (value: V) => void;
   children?: ReactNode;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-export default function Field<V = any, F extends FormFields = FormFields>({
+export default function Field<V = unknown, F extends FormFields = FormFields>({
   name,
   initialValue,
   component,
@@ -43,7 +43,10 @@ export default function Field<V = any, F extends FormFields = FormFields>({
   const { formState, mountField, focusField, changeField, blurField } = useFormContext<F>();
 
   useEffect(() => {
-    if (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue)) {
+    if (
+      mountField &&
+      (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue))
+    ) {
       mountField(name, initialValue);
       memoizedName.current = name;
       memoizedInitialValue.current = initialValue;
@@ -51,11 +54,16 @@ export default function Field<V = any, F extends FormFields = FormFields>({
   }, [name, initialValue, mountField]);
 
   const onFocus = useCallback(() => {
-    focusField(name);
+    if (focusField) {
+      focusField(name);
+    }
   }, [focusField, name]);
 
   const change = useCallback(
     (eventOrValue: ChangeEvent<{ value: V }> | V) => {
+      if (!changeField) {
+        return;
+      }
       let value: V;
       if (
         typeof eventOrValue === 'object' &&
@@ -85,19 +93,23 @@ export default function Field<V = any, F extends FormFields = FormFields>({
   );
 
   const onBlur = useCallback(() => {
-    blurField(name);
+    if (blurField) {
+      blurField(name);
+    }
   }, [blurField, name]);
 
   if (!formState.fields || !(name in formState.fields)) {
     return null;
   }
 
+  const field = formState.fields[name] as FieldState<V>;
+
   if (component) {
     return createElement<FieldComponentProps<V, F>>(
       component,
       {
         ...customProps,
-        ...formState.fields[name],
+        ...field,
         form: formState,
         onFocus,
         onChange: change,
@@ -110,7 +122,7 @@ export default function Field<V = any, F extends FormFields = FormFields>({
   return createElement('input', {
     ...customProps,
     name,
-    value: formState.fields[name]?.value,
+    value: field?.value,
     onFocus,
     onChange: change,
     onBlur,
