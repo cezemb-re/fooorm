@@ -4,7 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
-import typescript from 'rollup-plugin-typescript2';
+import typescript from '@rollup/plugin-typescript';
 import json from '@rollup/plugin-json';
 import autoprefixer from 'autoprefixer';
 import pkg from './package.json';
@@ -18,7 +18,7 @@ export default [
     input: path.resolve(__dirname, 'src/index.ts'),
     external: (id) => externals.some((dep) => id === dep || id.startsWith(`${dep}/`)),
     plugins: [
-      typescript(),
+      typescript({ tsconfig: './tsconfig.json' }),
       commonjs(),
       json(),
       resolve({ browser: true }),
