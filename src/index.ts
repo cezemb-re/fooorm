@@ -5,10 +5,13 @@ import formContext, {
   getDefaultFieldState,
   FormState,
   FormContext,
+  FormSubmitFunction,
+  FormValidationFunction,
   FormErrors,
   FormSubmitError,
   isFormSubmitError,
   getDefaultFormState,
+  Fields,
 } from './state';
 import Form, { FormProps } from './form';
 import Field, { FieldComponentProps } from './field';
@@ -31,7 +34,10 @@ export type {
   FormState,
   FieldComponentProps,
   FormContext,
+  FormSubmitFunction,
+  FormValidationFunction,
   FormErrors,
+  Fields,
 };
 
 export default {
