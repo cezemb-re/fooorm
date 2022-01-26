@@ -1,4 +1,5 @@
 import {
+  cloneElement,
   createElement,
   ReactElement,
   ReactNode,
@@ -23,7 +24,8 @@ export interface FieldComponentProps<V = unknown, F extends FormFields = FormFie
 export interface FieldProps<V = unknown, F extends FormFields = FormFields> {
   name: keyof F;
   initialValue?: V;
-  component?: string | ComponentType<FieldComponentProps<V, F>>;
+  element?: ReactElement;
+  component?: ComponentType<FieldComponentProps<V, F>> | string;
   onChange?: (value: V) => void;
   children?: ReactNode;
   [key: string]: unknown;
@@ -32,6 +34,7 @@ export interface FieldProps<V = unknown, F extends FormFields = FormFields> {
 export default function Field<V = unknown, F extends FormFields = FormFields>({
   name,
   initialValue,
+  element,
   component,
   onChange,
   children,
@@ -104,19 +107,21 @@ export default function Field<V = unknown, F extends FormFields = FormFields>({
 
   const field = formState.fields[name] as FieldState<V>;
 
+  const props = {
+    ...customProps,
+    ...field,
+    form: formState,
+    onFocus,
+    onChange: change,
+    onBlur,
+  };
+
+  if (element) {
+    return cloneElement(element, props, children);
+  }
+
   if (component) {
-    return createElement<FieldComponentProps<V, F>>(
-      component,
-      {
-        ...customProps,
-        ...field,
-        form: formState,
-        onFocus,
-        onChange: change,
-        onBlur,
-      },
-      children,
-    );
+    return createElement(component, props, children);
   }
 
   return createElement('input', {
