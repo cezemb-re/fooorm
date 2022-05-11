@@ -9,6 +9,7 @@ import {
   ReactElement,
   ReactNode,
   Context,
+  useMemo,
 } from 'react';
 import formContext, {
   FormState,
@@ -117,8 +118,9 @@ function Form<F extends FormFields = FormFields, V = unknown>(
 
   const resetForm = useCallback(() => setFormState(resetFormAction), []);
 
-  useImperativeHandle<FormContext<F, V>, FormContext<F, V>>(
-    ref,
+  const context = formContext as Context<FormContext<F, V>>;
+
+  const value = useMemo<FormContext<F, V>>(
     () => ({
       formState,
       mountField,
@@ -129,23 +131,13 @@ function Form<F extends FormFields = FormFields, V = unknown>(
       submitForm,
       resetForm,
     }),
-    [formState, mountField, focusField, changeField, blurField, resetField, submitForm, resetForm],
+    [blurField, changeField, focusField, formState, mountField, resetField, resetForm, submitForm],
   );
 
-  const context = formContext as Context<FormContext<F, V>>;
+  useImperativeHandle<FormContext<F, V>, FormContext<F, V>>(ref, () => value, [value]);
 
   return (
-    <context.Provider
-      value={{
-        formState,
-        mountField,
-        focusField,
-        changeField,
-        blurField,
-        resetField,
-        submitForm,
-        resetForm,
-      }}>
+    <context.Provider value={value}>
       {typeof document !== 'undefined' ? (
         <form onSubmit={submitForm} onReset={resetForm} className={className}>
           {children}

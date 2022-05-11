@@ -454,8 +454,8 @@ function parseSubmitErrors<F extends FormFields = FormFields>(
   if (!errors) {
     return {};
   }
-  if (typeof errors === 'object' && 'formErrors' in errors && errors.formErrors) {
-    return errors.formErrors as FormErrors<F>;
+  if (typeof errors === 'object' && 'submitErrors' in errors && errors.submitErrors) {
+    return errors.submitErrors as FormErrors<F>;
   }
   if (errors instanceof Error && errors) {
     return { _global: errors.message };
