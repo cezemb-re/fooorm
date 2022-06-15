@@ -29,14 +29,14 @@ export interface FormFields {
   [key: string]: unknown;
 }
 
-export type FormErrors<F extends FormFields = FormFields> = {
-  [key in keyof F]?: string;
+export type FormErrors<FF extends FormFields = FormFields> = {
+  [key in keyof FF]?: string;
 } & { _global?: string };
 
-export class FormSubmitError<F extends FormFields = FormFields> extends Error {
-  __FLAG__: 'FormSubmitError';
+export class FormSubmitError<FF extends FormFields = FormFields> extends Error {
+  readonly __FLAG__: 'FormSubmitError';
 
-  submitErrors: FormErrors<F> | null;
+  submitErrors: FormErrors<FF> | null;
 
   constructor(errors: string | FormErrors) {
     super(typeof errors === 'string' ? errors : 'Unknown error');
@@ -60,14 +60,14 @@ export type FormValidationFunction<F extends FormFields = FormFields> = (
   values: Partial<F>,
 ) => FormErrors<F> | Error | string | null | void;
 
-export type FormSubmitFunction<F extends FormFields = FormFields> = (
-  values: F,
-  changes?: Partial<F>,
+export type FormSubmitFunction<FF extends FormFields = FormFields> = (
+  values: FF,
+  changes?: Partial<FF>,
 ) => Promise<unknown> | FormErrors | Error | string | null | void;
 
-export type Fields<F extends FormFields = FormFields> = { [key in keyof F]?: FieldState };
+export type Fields<FF extends FormFields = FormFields> = { [key in keyof FF]?: FieldState };
 
-export interface FormState<F extends FormFields = FormFields> {
+export interface FormState<FF extends FormFields = FormFields> {
   hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
@@ -76,21 +76,16 @@ export interface FormState<F extends FormFields = FormFields> {
   submitCounter: number;
   submitSucceeded?: boolean;
   submitFailed?: boolean;
-  liveValidation?: boolean;
-  values?: Partial<F>;
-  changes?: Partial<F>;
-  fields?: Fields<F>;
-  errors?: FormErrors<F>;
+  values?: Partial<FF>;
+  changes?: Partial<FF>;
+  fields?: Fields<FF>;
+  errors?: FormErrors<FF>;
   error?: string;
   warning?: string;
-  warnings?: FormErrors<F>;
-  onSubmit?: FormSubmitFunction<F>;
-  onChange?: FormSubmitFunction<F>;
-  validate?: FormValidationFunction<F>;
-  warn?: FormValidationFunction<F>;
+  warnings?: FormErrors<FF>;
 }
 
-export function getDefaultFormState<F extends FormFields = FormFields>(): FormState<F> {
+export function getDefaultFormState<FF extends FormFields = FormFields>(): FormState<FF> {
   return {
     hasChanged: false,
     isValid: true,
@@ -101,35 +96,35 @@ export function getDefaultFormState<F extends FormFields = FormFields>(): FormSt
   };
 }
 
-export interface FormContext<F extends FormFields = FormFields, V = unknown> {
-  formState: FormState<F>;
+export interface FormContext<FF extends FormFields = FormFields, V = unknown> {
+  formState: FormState<FF>;
   mountField?: (
-    name: keyof F,
+    name: keyof FF,
     initialValue: V,
     validateField?: FieldValidationFunction,
     warnField?: FieldValidationFunction,
   ) => void;
-  focusField?: (name: keyof F) => void;
-  changeField?: (name: keyof F, value: V) => void;
-  blurField?: (name: keyof F) => void;
-  resetField?: (name: keyof F) => void;
+  focusField?: (name: keyof FF) => void;
+  changeField?: (name: keyof FF, value: V) => void;
+  blurField?: (name: keyof FF) => void;
+  resetField?: (name: keyof FF) => void;
   submitForm?: (event?: SyntheticEvent) => Promise<void> | boolean | void;
   resetForm?: () => void;
 }
 
-export function getDefaultContext<F extends FormFields = FormFields>(): FormContext<F> {
+export function getDefaultContext<FF extends FormFields = FormFields>(): FormContext<FF> {
   return {
-    formState: getDefaultFormState<F>(),
+    formState: getDefaultFormState<FF>(),
   };
 }
 
 const formContext = createContext<FormContext>(getDefaultContext());
 
-export function useFormContext<F extends FormFields = FormFields, V = unknown>(): FormContext<
-  F,
+export function useFormContext<FF extends FormFields = FormFields, V = unknown>(): FormContext<
+  FF,
   V
 > {
-  return useContext<FormContext<F, V>>(formContext as Context<FormContext<F, V>>);
+  return useContext<FormContext<FF, V>>(formContext as Context<FormContext<FF, V>>);
 }
 
 export default formContext;

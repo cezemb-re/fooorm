@@ -4,7 +4,6 @@ import {
   useState,
   useCallback,
   SyntheticEvent,
-  useEffect,
   Ref,
   ReactElement,
   ReactNode,
@@ -45,30 +44,12 @@ function Form<F extends FormFields = FormFields, V = unknown>(
   { onSubmit, onChange, validate, warn, liveValidation = false, className, children }: FormProps<F>,
   ref: Ref<FormContext<F, V>>,
 ): ReactElement {
-  const [formState, setFormState] = useState<FormState<F>>({
-    ...getDefaultFormState<F>(),
-    onSubmit,
-    onChange,
-    validate,
-    warn,
-    liveValidation,
-  });
-
-  useEffect(() => {
-    setFormState((lastState) => ({
-      ...lastState,
-      onSubmit,
-      onChange,
-      validate,
-      warn,
-      liveValidation,
-    }));
-  }, [onSubmit, onChange, validate, warn, liveValidation]);
+  const [formState, setFormState] = useState<FormState<F>>(getDefaultFormState<F>());
 
   const mountField = useCallback(
     (name: keyof F, initialValue: unknown) =>
-      setFormState((state) => mountFieldAction<F>(state, name, initialValue)),
-    [],
+      setFormState((state) => mountFieldAction<F>(state, name, initialValue, validate, warn)),
+    [validate, warn],
   );
 
   const focusField = useCallback(
@@ -76,18 +57,27 @@ function Form<F extends FormFields = FormFields, V = unknown>(
     [],
   );
 
-  const changeField = useCallback((name: keyof F, value: unknown) => {
-    setFormState((state) => changeFieldAction(state, name, value));
-  }, []);
+  const changeField = useCallback(
+    (name: keyof F, value: unknown) => {
+      setFormState((state) =>
+        changeFieldAction(state, name, value, onChange, liveValidation, validate, warn),
+      );
+    },
+    [liveValidation, onChange, validate, warn],
+  );
 
   const blurField = useCallback(
-    (name: keyof F) => setFormState((state) => blurFieldAction(state, name)),
-    [],
+    (name: keyof F) =>
+      setFormState((state) => blurFieldAction(state, name, liveValidation, validate, warn)),
+    [liveValidation, validate, warn],
   );
 
   const resetField = useCallback(
-    (name: keyof F) => setFormState((state) => resetFieldAction(state, name)),
-    [],
+    (name: keyof F) =>
+      setFormState((state) =>
+        resetFieldAction(state, name, onChange, liveValidation, validate, warn),
+      ),
+    [liveValidation, onChange, validate, warn],
   );
 
   const submitForm = useCallback(
@@ -106,17 +96,23 @@ function Form<F extends FormFields = FormFields, V = unknown>(
       setFormState(nextState);
 
       try {
-        nextState = await submitAction(formState);
+        nextState = await submitAction(formState, onSubmit, validate);
 
         setFormState(nextState);
       } catch (errors) {
         setFormState(failSubmitAction(formState, errors as Error));
       }
     },
-    [formState],
+    [formState, onSubmit, validate],
   );
 
-  const resetForm = useCallback(() => setFormState(resetFormAction), []);
+  const resetForm = useCallback(
+    () =>
+      setFormState((previousState) =>
+        resetFormAction(previousState, onChange, validate, warn, liveValidation),
+      ),
+    [liveValidation, onChange, validate, warn],
+  );
 
   const context = formContext as Context<FormContext<F, V>>;
 
