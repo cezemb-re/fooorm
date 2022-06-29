@@ -96,35 +96,32 @@ export function getDefaultFormState<FF extends FormFields = FormFields>(): FormS
   };
 }
 
-export interface FormContext<FF extends FormFields = FormFields, V = unknown> {
+export interface FormContext<FF extends FormFields = FormFields> {
   formState: FormState<FF>;
-  mountField?: (
-    name: keyof FF,
-    initialValue: V,
+  mountField(
+    name: string,
+    initialValue: unknown,
     validateField?: FieldValidationFunction,
     warnField?: FieldValidationFunction,
-  ) => void;
-  focusField?: (name: keyof FF) => void;
-  changeField?: (name: keyof FF, value: V) => void;
-  blurField?: (name: keyof FF) => void;
-  resetField?: (name: keyof FF) => void;
-  submitForm?: (event?: SyntheticEvent) => Promise<void> | boolean | void;
-  resetForm?: () => void;
+  ): void;
+  focusField(name: string): void;
+  changeField(name: string, value: unknown): void;
+  blurField(name: string): void;
+  resetField(name: string): void;
+  submitForm(event?: SyntheticEvent): Promise<void> | boolean | void;
+  resetForm(): void;
 }
 
-export function getDefaultContext<FF extends FormFields = FormFields>(): FormContext<FF> {
-  return {
-    formState: getDefaultFormState<FF>(),
-  };
-}
+const formContext = createContext<FormContext | undefined>(undefined);
 
-const formContext = createContext<FormContext>(getDefaultContext());
-
-export function useFormContext<FF extends FormFields = FormFields, V = unknown>(): FormContext<
-  FF,
-  V
-> {
-  return useContext<FormContext<FF, V>>(formContext as Context<FormContext<FF, V>>);
+export function useFormContext<FF extends FormFields = FormFields>(): FormContext<FF> {
+  const context = useContext<FormContext<FF> | undefined>(
+    formContext as Context<FormContext<FF> | undefined>,
+  );
+  if (!context) {
+    throw new Error('Missing form context');
+  }
+  return context;
 }
 
 export default formContext;

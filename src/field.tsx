@@ -12,26 +12,26 @@ import {
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
 
-export interface FieldComponentProps<V = unknown, F extends FormFields = FormFields>
+export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFields>
   extends Partial<FieldState<V>> {
-  form: FormState<F>;
+  form: FormState<FF>;
   onFocus: () => void;
   onChange: (eventOrValue: ChangeEvent<{ value: V }> | V) => void;
   onBlur: () => void;
   [key: string]: unknown; // Custom Props
 }
 
-export interface FieldProps<V = unknown, F extends FormFields = FormFields> {
-  name: keyof F;
+export interface FieldProps<V = unknown, FF extends FormFields = FormFields> {
+  name: string;
   initialValue?: V;
   element?: ReactElement;
-  component?: ComponentType<FieldComponentProps<V, F>> | string;
+  component?: ComponentType<FieldComponentProps<V, FF>> | string;
   onChange?: (value: V) => void;
   children?: ReactNode;
   [key: string]: unknown;
 }
 
-export default function Field<V = unknown, F extends FormFields = FormFields>({
+export default function Field<V = unknown, FF extends FormFields = FormFields>({
   name,
   initialValue,
   element,
@@ -39,17 +39,14 @@ export default function Field<V = unknown, F extends FormFields = FormFields>({
   onChange,
   children,
   ...customProps
-}: FieldProps<V, F>): ReactElement | null {
-  const memoizedName = useRef<keyof F>();
+}: FieldProps<V, FF>): ReactElement | null {
+  const memoizedName = useRef<string>();
   const memoizedInitialValue = useRef<V>();
 
-  const { formState, mountField, focusField, changeField, blurField } = useFormContext<F>();
+  const { formState, mountField, focusField, changeField, blurField } = useFormContext<FF>();
 
   useEffect(() => {
-    if (
-      mountField &&
-      (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue))
-    ) {
+    if (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue)) {
       mountField(name, initialValue);
       memoizedName.current = name;
       memoizedInitialValue.current = initialValue;
@@ -57,16 +54,11 @@ export default function Field<V = unknown, F extends FormFields = FormFields>({
   }, [name, initialValue, mountField]);
 
   const onFocus = useCallback(() => {
-    if (focusField) {
-      focusField(name);
-    }
+    focusField(name);
   }, [focusField, name]);
 
   const change = useCallback(
     (eventOrValue: ChangeEvent<{ value: V }> | V) => {
-      if (!changeField) {
-        return;
-      }
       let value: V;
       if (
         typeof eventOrValue === 'object' &&
@@ -96,9 +88,7 @@ export default function Field<V = unknown, F extends FormFields = FormFields>({
   );
 
   const onBlur = useCallback(() => {
-    if (blurField) {
-      blurField(name);
-    }
+    blurField(name);
   }, [blurField, name]);
 
   if (!formState.fields || !(name in formState.fields)) {
