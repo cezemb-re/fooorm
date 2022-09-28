@@ -88,7 +88,7 @@ function Form<FF extends FormFields = FormFields>(
   );
 
   const submitForm = useCallback(
-    async (event: SyntheticEvent | undefined) => {
+    async (event?: SyntheticEvent) => {
       if (
         event &&
         'preventDefault' in event &&

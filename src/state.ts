@@ -108,7 +108,7 @@ export interface FormContext<FF extends FormFields = FormFields> {
   changeField(name: string, value: unknown): void;
   blurField(name: string): void;
   resetField(name: string): void;
-  submitForm(event?: SyntheticEvent): Promise<void> | boolean | void;
+  submitForm(event?: SyntheticEvent): Promise<unknown> | boolean | unknown;
   resetForm(): void;
 }
 
