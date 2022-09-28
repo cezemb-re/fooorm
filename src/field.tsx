@@ -15,9 +15,9 @@ import { FieldState, FormState, useFormContext, FormFields } from './state';
 export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFields>
   extends Partial<FieldState<V>> {
   form: FormState<FF>;
-  onFocus: () => void;
-  onChange: (eventOrValue: ChangeEvent<{ value: V }> | V) => void;
-  onBlur: () => void;
+  onFocus: () => unknown;
+  onChange: (eventOrValue: ChangeEvent<{ value: V }> | V) => unknown;
+  onBlur: () => unknown;
   [key: string]: unknown; // Custom Props
 }
 
@@ -26,7 +26,7 @@ export interface FieldProps<V = unknown, FF extends FormFields = FormFields> {
   initialValue?: V;
   element?: ReactElement;
   component?: ComponentType<FieldComponentProps<V, FF>> | string;
-  onChange?: (value: V) => void;
+  onChange?: (value: V) => unknown;
   children?: ReactNode;
   [key: string]: unknown;
 }
