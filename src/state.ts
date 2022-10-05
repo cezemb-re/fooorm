@@ -63,7 +63,7 @@ export type FormValidationFunction<F extends FormFields = FormFields> = (
 export type FormSubmitFunction<FF extends FormFields = FormFields> = (
   values: FF,
   changes?: Partial<FF>,
-) => Promise<unknown> | FormErrors | Error | string | null | void;
+) => unknown;
 
 export type Fields<FF extends FormFields = FormFields> = { [key in keyof FF]?: FieldState };
 
@@ -108,7 +108,7 @@ export interface FormContext<FF extends FormFields = FormFields> {
   changeField(name: string, value: unknown): void;
   blurField(name: string): void;
   resetField(name: string): void;
-  submitForm(event?: SyntheticEvent): Promise<unknown> | boolean | unknown;
+  submitForm(event?: SyntheticEvent): unknown;
   resetForm(): void;
 }
 
