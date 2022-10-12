@@ -96,15 +96,15 @@ export function getDefaultFormState<FF = FormFields>(): FormState<FF> {
 export interface FormContext<FF = FormFields> {
   formState: FormState<FF>;
   mountField(
-    name: string,
+    name: keyof FF,
     initialValue: unknown,
     validateField?: FieldValidationFunction,
     warnField?: FieldValidationFunction,
   ): void;
-  focusField(name: string): void;
-  changeField(name: string, value: unknown): void;
-  blurField(name: string): void;
-  resetField(name: string): void;
+  focusField(name: keyof FF): void;
+  changeField(name: keyof FF, value: unknown): void;
+  blurField(name: keyof FF): void;
+  resetField(name: keyof FF): void;
   submitForm(event?: SyntheticEvent): unknown;
   resetForm(): void;
 }

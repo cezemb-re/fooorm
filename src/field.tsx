@@ -21,7 +21,7 @@ export interface FieldComponentProps<V = unknown, FF = FormFields> extends Parti
 }
 
 export interface FieldProps<V = unknown, FF = FormFields> {
-  name: string;
+  name: keyof FF;
   initialValue?: V;
   element?: ReactElement;
   component?: ComponentType<FieldComponentProps<V, FF>> | string;
@@ -39,7 +39,7 @@ export default function Field<V = unknown, FF = FormFields>({
   children,
   ...customProps
 }: FieldProps<V, FF>): ReactElement | null {
-  const memoizedName = useRef<string>();
+  const memoizedName = useRef<keyof FF>();
   const memoizedInitialValue = useRef<V>();
 
   const { formState, mountField, focusField, changeField, blurField } = useFormContext<FF>();

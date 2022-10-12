@@ -29,7 +29,7 @@ import {
   failSubmitAction,
 } from './actions';
 
-export interface FormProps<FF extends FormFields = FormFields> {
+export interface FormProps<FF = FormFields> {
   onSubmit?: FormSubmitFunction<FF>;
   onChange?: FormSubmitFunction<FF>;
   validate?: FormValidationFunction<FF>;
@@ -39,7 +39,7 @@ export interface FormProps<FF extends FormFields = FormFields> {
   children?: ReactNode;
 }
 
-function Form<FF extends FormFields = FormFields>(
+function Form<FF = FormFields>(
   {
     onSubmit,
     onChange,
@@ -54,18 +54,18 @@ function Form<FF extends FormFields = FormFields>(
   const [formState, setFormState] = useState<FormState<FF>>(getDefaultFormState<FF>());
 
   const mountField = useCallback(
-    (name: string, initialValue: unknown) =>
+    (name: keyof FF, initialValue: unknown) =>
       setFormState((state) => mountFieldAction<FF>(state, name, initialValue, validate, warn)),
     [validate, warn],
   );
 
   const focusField = useCallback(
-    (name: string) => setFormState((state) => focusFieldAction(state, name)),
+    (name: keyof FF) => setFormState((state) => focusFieldAction(state, name)),
     [],
   );
 
   const changeField = useCallback(
-    (name: string, value: unknown) => {
+    (name: keyof FF, value: unknown) => {
       setFormState((state) =>
         changeFieldAction(state, name, value, onChange, liveValidation, validate, warn),
       );
@@ -74,13 +74,13 @@ function Form<FF extends FormFields = FormFields>(
   );
 
   const blurField = useCallback(
-    (name: string) =>
+    (name: keyof FF) =>
       setFormState((state) => blurFieldAction(state, name, liveValidation, validate, warn)),
     [liveValidation, validate, warn],
   );
 
   const resetField = useCallback(
-    (name: string) =>
+    (name: keyof FF) =>
       setFormState((state) =>
         resetFieldAction(state, name, onChange, liveValidation, validate, warn),
       ),
@@ -138,7 +138,7 @@ function Form<FF extends FormFields = FormFields>(
   useImperativeHandle<FormContext<FF>, FormContext<FF>>(ref, () => value, [value]);
 
   return (
-    <formContext.Provider value={value}>
+    <formContext.Provider value={value as FormContext}>
       {typeof document !== 'undefined' ? (
         <form onSubmit={submitForm} onReset={resetForm} className={className}>
           {children}
@@ -150,7 +150,7 @@ function Form<FF extends FormFields = FormFields>(
   );
 }
 
-export default forwardRef(Form) as <F extends FormFields = FormFields>(
+export default forwardRef(Form) as <F = FormFields>(
   props: FormProps<F> & {
     ref?: Ref<FormContext<F>>;
   },
