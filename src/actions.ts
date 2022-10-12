@@ -19,7 +19,7 @@ function parseError(error: Error | string): string {
   return error;
 }
 
-function checkFormFields<FF extends FormFields = FormFields>(
+function checkFormFields<FF = FormFields>(
   values?: Partial<FF>,
   validate?: FormValidationFunction<FF>,
 ): FormErrors<FF> | undefined {
@@ -46,20 +46,22 @@ function checkFormFields<FF extends FormFields = FormFields>(
   }
 }
 
-function dispatchErrors<FF extends FormFields = FormFields>(
+function dispatchErrors<FF = FormFields>(
   state: FormState<FF>,
   errors: FormErrors<FF>,
 ): FormState<FF> {
   const nextState: FormState<FF> = { ...state, errors };
 
-  Object.entries(errors).forEach(([field, error]: [keyof FF, string | undefined]) => {
+  Object.entries(errors).forEach(([field, error]: [string, string | undefined]) => {
     if (!error || !nextState.errors) {
       return;
     }
     if (field === '_global' && error) {
       nextState.error = error;
     } else if (nextState.fields && field in nextState.fields) {
-      const nextField: FieldState | undefined = nextState.fields[field];
+      const nextField: FieldState | undefined = (
+        nextState.fields as { [key: string]: FieldState | undefined }
+      )[field];
       if (nextField) {
         nextState.fields = {
           ...nextState.fields,
@@ -72,20 +74,22 @@ function dispatchErrors<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-function dispatchWarnings<FF extends FormFields = FormFields>(
+function dispatchWarnings<FF = FormFields>(
   state: FormState<FF>,
   warnings: FormErrors<FF>,
 ): FormState<FF> {
   const nextState: FormState<FF> = { ...state, warnings };
 
-  Object.entries(warnings).forEach(([field, warning]: [keyof FF, string | undefined]) => {
+  Object.entries(warnings).forEach(([field, warning]: [string, string | undefined]) => {
     if (!warning || !nextState.warnings) {
       return;
     }
     if (field === '_global' && warning) {
       nextState.warning = warning;
     } else if (nextState.fields && field in nextState.fields) {
-      const nextField: FieldState | undefined = nextState.fields[field];
+      const nextField: FieldState | undefined = (
+        nextState.fields as { [key: string]: FieldState | undefined }
+      )[field];
       if (nextField) {
         nextState.fields = {
           ...nextState.fields,
@@ -98,19 +102,17 @@ function dispatchWarnings<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-function checkFieldChanges<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-): FormState<FF> {
+function checkFieldChanges<FF = FormFields>(state: FormState<FF>): FormState<FF> {
   return {
     ...state,
-    hasChanged: Object.values(state.fields as { [key in keyof FF]: FieldState }).reduce(
+    hasChanged: Object.values<FieldState>(state.fields as { [key in keyof FF]: FieldState }).reduce(
       (hasChanged: boolean, field: FieldState) => field.hasChanged || hasChanged,
       false,
     ),
   };
 }
 
-function validateForm<FF extends FormFields = FormFields>(
+function validateForm<FF = FormFields>(
   state: FormState<FF>,
   validate?: FormValidationFunction<FF>,
   warn?: FormValidationFunction<FF>,
@@ -147,7 +149,7 @@ function validateForm<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-export function getSafeName<FF extends FormFields = FormFields>(name: keyof FF): string {
+export function getSafeName<FF = FormFields>(name: keyof FF): string {
   if (typeof name === 'number') {
     return name.toString(10);
   }
@@ -157,10 +159,10 @@ export function getSafeName<FF extends FormFields = FormFields>(name: keyof FF):
   return name;
 }
 
-export function mountFieldAction<FF extends FormFields = FormFields, Value = unknown>(
+export function mountFieldAction<FF = FormFields, V = unknown>(
   state: FormState<FF>,
   name: keyof FF,
-  initialValue: Value,
+  initialValue: V,
   validate?: FormValidationFunction<FF>,
   warn?: FormValidationFunction<FF>,
 ): FormState<FF> {
@@ -170,8 +172,8 @@ export function mountFieldAction<FF extends FormFields = FormFields, Value = unk
 
   const safeName = getSafeName<FF>(name);
 
-  const field: FieldState<Value> = {
-    ...getDefaultFieldState<Value>(),
+  const field: FieldState<V> = {
+    ...getDefaultFieldState<V>(),
     name: safeName,
     initialValue,
     value: initialValue,
@@ -188,8 +190,8 @@ export function mountFieldAction<FF extends FormFields = FormFields, Value = unk
     writable: true,
   });
 
-  if (nextState.changes && nextState.changes[safeName]) {
-    delete nextState.changes[safeName];
+  if (nextState.changes && (nextState.changes as { [key: string]: V })[safeName]) {
+    delete (nextState.changes as { [key: string]: V })[safeName];
   }
 
   if (!nextState.values) {
@@ -206,7 +208,7 @@ export function mountFieldAction<FF extends FormFields = FormFields, Value = unk
   return checkFieldChanges<FF>(validateForm<FF>(nextState, validate, warn));
 }
 
-export function focusFieldAction<FF extends FormFields = FormFields>(
+export function focusFieldAction<FF = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
 ): FormState<FF> {
@@ -218,7 +220,7 @@ export function focusFieldAction<FF extends FormFields = FormFields>(
 
   const safeName = getSafeName<FF>(name);
 
-  if (!nextState.fields[safeName]) {
+  if (!(nextState.fields as { [key: string]: FieldState | undefined })[safeName]) {
     throw new Error('Field not found');
   }
 
@@ -227,7 +229,7 @@ export function focusFieldAction<FF extends FormFields = FormFields>(
 
   Object.defineProperty(nextState.fields, safeName, {
     value: {
-      ...nextState.fields[safeName],
+      ...(nextState.fields as { [key: string]: FieldState | undefined })[safeName],
       isActive: true,
       visited: true,
     },
@@ -239,10 +241,10 @@ export function focusFieldAction<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-export function changeFieldAction<Value = unknown, FF extends FormFields = FormFields>(
+export function changeFieldAction<V = unknown, FF = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
-  value: Value,
+  value: V,
   onChange?: FormSubmitFunction<FF>,
   liveValidation?: boolean,
   validate?: FormValidationFunction<FF>,
@@ -256,7 +258,7 @@ export function changeFieldAction<Value = unknown, FF extends FormFields = FormF
 
   const safeName = getSafeName<FF>(name);
 
-  const field = nextState.fields[safeName];
+  const field = (nextState.fields as { [key: string]: FieldState<V> | undefined })[safeName];
 
   if (!field) {
     throw new Error('Field not found');
@@ -275,7 +277,7 @@ export function changeFieldAction<Value = unknown, FF extends FormFields = FormF
       writable: true,
     });
   } else if (nextState.changes && safeName in nextState.changes) {
-    delete nextState.changes[safeName];
+    delete (nextState.changes as { [key: string]: FieldState<V> | undefined })[safeName];
   }
 
   Object.defineProperty(nextState.fields, safeName, {
@@ -312,7 +314,7 @@ export function changeFieldAction<Value = unknown, FF extends FormFields = FormF
   );
 }
 
-export function blurFieldAction<FF extends FormFields = FormFields>(
+export function blurFieldAction<FF = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
   liveValidation?: boolean,
@@ -327,14 +329,17 @@ export function blurFieldAction<FF extends FormFields = FormFields>(
 
   const safeName = getSafeName<FF>(name);
 
-  if (!nextState.fields[safeName]) {
+  if (!(nextState.fields as { [key: string]: FieldState | undefined })[safeName]) {
     throw new Error('Field not found');
   }
 
   nextState.isActive = false;
 
   Object.defineProperty(nextState.fields, safeName, {
-    value: { ...nextState.fields[safeName], isActive: false },
+    value: {
+      ...(nextState.fields as { [key: string]: FieldState | undefined })[safeName],
+      isActive: false,
+    },
     configurable: true,
     enumerable: true,
     writable: true,
@@ -343,7 +348,7 @@ export function blurFieldAction<FF extends FormFields = FormFields>(
   return liveValidation ? nextState : validateForm<FF>(nextState, validate, warn);
 }
 
-export function resetFieldAction<FF extends FormFields = FormFields>(
+export function resetFieldAction<FF = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
   onChange?: FormSubmitFunction<FF>,
@@ -359,14 +364,14 @@ export function resetFieldAction<FF extends FormFields = FormFields>(
 
   const safeName = getSafeName<FF>(name);
 
-  const field = nextState.fields[safeName];
+  const field = (nextState.fields as { [key: string]: FieldState | undefined })[safeName];
 
   if (!field) {
     throw new Error('Field not found');
   }
 
   if (nextState.changes && safeName in nextState.changes) {
-    delete nextState.changes[safeName];
+    delete (nextState.changes as { [key: string]: FieldState | undefined })[safeName];
   }
 
   Object.defineProperty<Fields>(nextState.fields, safeName, {
@@ -400,7 +405,7 @@ export function resetFieldAction<FF extends FormFields = FormFields>(
   );
 }
 
-export function resetFormAction<FF extends FormFields = FormFields>(
+export function resetFormAction<FF = FormFields>(
   state: FormState<FF>,
   onChange?: FormSubmitFunction<FF>,
   validate?: FormValidationFunction<FF>,
@@ -413,8 +418,8 @@ export function resetFormAction<FF extends FormFields = FormFields>(
   };
 
   if (nextState.fields) {
-    Object.entries(nextState.fields).forEach(
-      ([name, field]: [keyof FF, FieldState | undefined]) => {
+    Object.entries<FieldState | undefined>(nextState.fields).forEach(
+      ([name, field]: [string, FieldState | undefined]) => {
         if (!field) {
           return;
         }
@@ -450,9 +455,7 @@ export function resetFormAction<FF extends FormFields = FormFields>(
   return liveValidation ? validateForm<FF>(nextState, validate, warn) : nextState;
 }
 
-export function startSubmitAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-): FormState<FF> {
+export function startSubmitAction<FF = FormFields>(state: FormState<FF>): FormState<FF> {
   const nextState = {
     ...state,
     isSubmitting: true,
@@ -462,8 +465,8 @@ export function startSubmitAction<FF extends FormFields = FormFields>(
   };
 
   if (nextState.fields) {
-    Object.entries(nextState.fields).forEach(
-      ([name, field]: [keyof FF, FieldState | undefined]) => {
+    Object.entries<FieldState | undefined>(nextState.fields).forEach(
+      ([name, field]: [string, FieldState | undefined]) => {
         Object.defineProperty(nextState.fields, name, {
           value: {
             ...field,
@@ -480,7 +483,7 @@ export function startSubmitAction<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-function parseSubmitErrors<FF extends FormFields = FormFields>(
+function parseSubmitErrors<FF = FormFields>(
   errors: FormSubmitError | FormErrors | Error | string,
 ): FormErrors<FF> {
   if (!errors) {
@@ -501,7 +504,7 @@ function parseSubmitErrors<FF extends FormFields = FormFields>(
   return { _global: 'Unknown error' };
 }
 
-export function failSubmitAction<FF extends FormFields = FormFields>(
+export function failSubmitAction<FF = FormFields>(
   state: FormState<FF>,
   submitErrors: FormSubmitError<FF> | FormErrors<FF> | Error | string,
 ): FormState<FF> {
@@ -519,7 +522,7 @@ export function failSubmitAction<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-export async function submitAction<FF extends FormFields = FormFields>(
+export async function submitAction<FF = FormFields>(
   state: FormState<FF>,
   onSubmit?: FormSubmitFunction<FF>,
   validate?: FormValidationFunction<FF>,

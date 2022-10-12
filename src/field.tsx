@@ -12,8 +12,7 @@ import {
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields } from './state';
 
-export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFields>
-  extends Partial<FieldState<V>> {
+export interface FieldComponentProps<V = unknown, FF = FormFields> extends Partial<FieldState<V>> {
   form: FormState<FF>;
   onFocus: () => unknown;
   onChange: (eventOrValue: ChangeEvent<{ value: V }> | V) => unknown;
@@ -21,7 +20,7 @@ export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFi
   [key: string]: unknown; // Custom Props
 }
 
-export interface FieldProps<V = unknown, FF extends FormFields = FormFields> {
+export interface FieldProps<V = unknown, FF = FormFields> {
   name: string;
   initialValue?: V;
   element?: ReactElement;
@@ -31,7 +30,7 @@ export interface FieldProps<V = unknown, FF extends FormFields = FormFields> {
   [key: string]: unknown;
 }
 
-export default function Field<V = unknown, FF extends FormFields = FormFields>({
+export default function Field<V = unknown, FF = FormFields>({
   name,
   initialValue,
   element,
@@ -95,7 +94,9 @@ export default function Field<V = unknown, FF extends FormFields = FormFields>({
     return null;
   }
 
-  const field = formState.fields[name] as FieldState<V>;
+  const field = (formState.fields as { [key: string]: FieldState | undefined })[
+    name
+  ] as FieldState<V>;
 
   const props = {
     ...customProps,
