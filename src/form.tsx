@@ -9,7 +9,8 @@ import {
   ReactNode,
   useMemo,
 } from 'react';
-import formContext, {
+import {
+  formContext,
   FormState,
   getDefaultFormState,
   FormFields,
@@ -39,7 +40,7 @@ export interface FormProps<FF = FormFields> {
   children?: ReactNode;
 }
 
-function Form<FF = FormFields>(
+export const Form = forwardRef(function Form<FF = FormFields>(
   {
     onSubmit,
     onChange,
@@ -148,9 +149,7 @@ function Form<FF = FormFields>(
       )}
     </formContext.Provider>
   );
-}
-
-export default forwardRef(Form) as <F = FormFields>(
+}) as <F = FormFields>(
   props: FormProps<F> & {
     ref?: Ref<FormContext<F>>;
   },

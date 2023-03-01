@@ -109,7 +109,7 @@ export interface FormContext<FF = FormFields> {
   resetForm(): void;
 }
 
-const formContext = createContext<FormContext | undefined>(undefined);
+export const formContext = createContext<FormContext | undefined>(undefined);
 
 export function useFormContext<FF = FormFields>(): FormContext<FF> {
   const context = useContext<FormContext<FF> | undefined>(
@@ -120,5 +120,3 @@ export function useFormContext<FF = FormFields>(): FormContext<FF> {
   }
   return context;
 }
-
-export default formContext;

@@ -30,7 +30,7 @@ export interface FieldProps<V = unknown, FF = FormFields> {
   [key: string]: unknown;
 }
 
-export default function Field<V = unknown, FF = FormFields>({
+export function Field<V = unknown, FF = FormFields>({
   name,
   initialValue,
   element,
