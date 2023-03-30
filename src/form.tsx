@@ -17,6 +17,7 @@ import {
   FormContext,
   FormSubmitFunction,
   FormValidationFunction,
+  FieldModifier,
 } from './state';
 import {
   mountFieldAction,
@@ -66,9 +67,18 @@ export const Form = forwardRef(function Form<FF = FormFields>(
   );
 
   const changeField = useCallback(
-    (name: keyof FF, value: unknown) => {
+    (name: keyof FF, modifier: FieldModifier, onChangeField?: (value: any) => void) => {
       setFormState((state) =>
-        changeFieldAction(state, name, value, onChange, liveValidation, validate, warn),
+        changeFieldAction(
+          state,
+          name,
+          modifier,
+          onChange,
+          liveValidation,
+          validate,
+          warn,
+          onChangeField,
+        ),
       );
     },
     [liveValidation, onChange, validate, warn],

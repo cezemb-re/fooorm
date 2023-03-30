@@ -1,5 +1,7 @@
 import isEqual from 'lodash.isequal';
 import {
+  FieldModifier,
+  FieldModifierFunction,
   Fields,
   FieldState,
   FormErrors,
@@ -244,11 +246,12 @@ export function focusFieldAction<FF = FormFields>(
 export function changeFieldAction<V = unknown, FF = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
-  value: V,
+  modifier: FieldModifier<V>,
   onChange?: FormSubmitFunction<FF>,
   liveValidation?: boolean,
   validate?: FormValidationFunction<FF>,
   warn?: FormValidationFunction<FF>,
+  onChangeField?: (value: V) => void,
 ): FormState<FF> {
   const nextState: FormState<FF> = { ...state };
 
@@ -262,6 +265,33 @@ export function changeFieldAction<V = unknown, FF = FormFields>(
 
   if (!field) {
     throw new Error('Field not found');
+  }
+
+  let value: V;
+  if (
+    typeof modifier === 'object' &&
+    modifier &&
+    'target' in modifier &&
+    modifier.target &&
+    'value' in modifier.target
+  ) {
+    value = modifier.target.value;
+  } else if (
+    typeof modifier === 'object' &&
+    modifier &&
+    'currentTarget' in modifier &&
+    modifier.currentTarget &&
+    'value' in modifier.currentTarget
+  ) {
+    value = modifier.currentTarget.value;
+  } else if (typeof modifier === 'function') {
+    value = (modifier as FieldModifierFunction<V>)(field.value);
+  } else {
+    value = modifier as V;
+  }
+
+  if (onChangeField) {
+    onChangeField(value);
   }
 
   const hasChanged = !isEqual(value, field.initialValue);

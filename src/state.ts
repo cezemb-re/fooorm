@@ -1,4 +1,8 @@
-import { Context, createContext, SyntheticEvent, useContext } from 'react';
+import { ChangeEvent, Context, createContext, SyntheticEvent, useContext } from 'react';
+
+export type FieldModifierFunction<V> = (oldValue?: V) => V;
+
+export type FieldModifier<V = unknown> = V | ChangeEvent<{ value: V }> | FieldModifierFunction<V>;
 
 export type FieldValidationFunction = (value: unknown) => Error | string | null | void;
 
@@ -95,14 +99,18 @@ export function getDefaultFormState<FF = FormFields>(): FormState<FF> {
 
 export interface FormContext<FF = FormFields> {
   formState: FormState<FF>;
-  mountField(
+  mountField<F extends keyof FF>(
     name: keyof FF,
-    initialValue: unknown,
+    initialValue?: FF[F],
     validateField?: FieldValidationFunction,
     warnField?: FieldValidationFunction,
   ): void;
   focusField(name: keyof FF): void;
-  changeField(name: keyof FF, value: unknown): void;
+  changeField<F extends keyof FF>(
+    name: keyof FF,
+    modifier: FieldModifier<FF[F]>,
+    onChange?: (value: FF[F]) => void,
+  ): void;
   blurField(name: keyof FF): void;
   resetField(name: keyof FF): void;
   submitForm(event?: SyntheticEvent): unknown;
