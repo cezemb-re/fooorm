@@ -33,11 +33,11 @@ export interface FormFields {
   [key: string]: unknown;
 }
 
-export type FormErrors<FF = FormFields> = {
+export type FormErrors<FF extends FormFields = FormFields> = {
   [key in keyof FF]?: string;
 } & { _global?: string };
 
-export class FormSubmitError<FF = FormFields> extends Error {
+export class FormSubmitError<FF extends FormFields = FormFields> extends Error {
   readonly __FLAG__: 'FormSubmitError';
 
   submitErrors: FormErrors<FF> | null;
@@ -60,15 +60,18 @@ export function isFormSubmitError(error: unknown): boolean {
   );
 }
 
-export type FormValidationFunction<F = FormFields> = (
-  values: Partial<F>,
-) => FormErrors<F> | Error | string | null | void;
+export type FormValidationFunction<FF extends FormFields = FormFields> = (
+  values: Partial<FF>,
+) => FormErrors<FF> | Error | string | null | void;
 
-export type FormSubmitFunction<FF = FormFields> = (values: FF, changes?: Partial<FF>) => unknown;
+export type FormSubmitFunction<FF extends FormFields = FormFields> = (
+  values: FF,
+  changes?: Partial<FF>,
+) => unknown;
 
-export type Fields<FF = FormFields> = { [key in keyof FF]?: FieldState };
+export type Fields<FF extends FormFields = FormFields> = { [key in keyof FF]?: FieldState };
 
-export interface FormState<FF = FormFields> {
+export interface FormState<FF extends FormFields = FormFields> {
   hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
@@ -86,7 +89,7 @@ export interface FormState<FF = FormFields> {
   warnings?: FormErrors<FF>;
 }
 
-export function getDefaultFormState<FF = FormFields>(): FormState<FF> {
+export function getDefaultFormState<FF extends FormFields = FormFields>(): FormState<FF> {
   return {
     hasChanged: false,
     isValid: true,
@@ -97,7 +100,7 @@ export function getDefaultFormState<FF = FormFields>(): FormState<FF> {
   };
 }
 
-export interface FormContext<FF = FormFields> {
+export interface FormContext<FF extends FormFields = FormFields> {
   formState: FormState<FF>;
   mountField<F extends keyof FF>(
     name: keyof FF,
@@ -106,10 +109,10 @@ export interface FormContext<FF = FormFields> {
     warnField?: FieldValidationFunction,
   ): void;
   focusField(name: keyof FF): void;
-  changeField<F extends keyof FF>(
+  changeField<V = unknown>(
     name: keyof FF,
-    modifier: FieldModifier<FF[F]>,
-    onChange?: (value: FF[F]) => void,
+    modifier: FieldModifier<V>,
+    onChange?: (value: V) => void,
   ): void;
   blurField(name: keyof FF): void;
   resetField(name: keyof FF): void;
@@ -119,7 +122,7 @@ export interface FormContext<FF = FormFields> {
 
 export const formContext = createContext<FormContext | undefined>(undefined);
 
-export function useFormContext<FF = FormFields>(): FormContext<FF> {
+export function useFormContext<FF extends FormFields = FormFields>(): FormContext<FF> {
   const context = useContext<FormContext<FF> | undefined>(
     formContext as Context<FormContext<FF> | undefined>,
   );

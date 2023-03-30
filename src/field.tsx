@@ -11,26 +11,26 @@ import {
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields, FieldModifier } from './state';
 
-export interface FieldComponentProps<FF extends FormFields, F extends keyof FF>
-  extends Partial<FieldState<FF[F]>> {
+export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFields>
+  extends Partial<FieldState<V>> {
   form: FormState<FF>;
   onFocus: () => void;
-  onChange: (modifier: FieldModifier<FF[F]>) => void;
+  onChange: (modifier: FieldModifier<V>) => void;
   onBlur: () => void;
   [key: string]: unknown; // Custom Props
 }
 
-export interface FieldProps<FF extends FormFields, F extends keyof FF> {
+export interface FieldProps<V = unknown, FF extends FormFields = FormFields> {
   name: keyof FF;
-  initialValue?: FF[F];
+  initialValue?: V;
   element?: ReactElement;
-  component?: ComponentType<FieldComponentProps<FF, F>> | string;
-  onChange?: (value: FF[F]) => void;
+  component?: ComponentType<FieldComponentProps<V, FF>> | string;
+  onChange?: (value: V) => void;
   children?: ReactNode;
   [key: string]: unknown;
 }
 
-export function Field<FF extends FormFields, F extends keyof FF>({
+export function Field<V = unknown, FF extends FormFields = FormFields>({
   name,
   initialValue,
   element,
@@ -38,15 +38,15 @@ export function Field<FF extends FormFields, F extends keyof FF>({
   onChange,
   children,
   ...customProps
-}: FieldProps<FF, F>): ReactElement | null {
+}: FieldProps<V, FF>): ReactElement | null {
   const memoizedName = useRef<keyof FF>();
-  const memoizedInitialValue = useRef<FF[F]>();
+  const memoizedInitialValue = useRef<V>();
 
   const { formState, mountField, focusField, changeField, blurField } = useFormContext<FF>();
 
   useEffect(() => {
     if (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue)) {
-      mountField(name, initialValue);
+      mountField(name, initialValue as FF[keyof FF]);
       memoizedName.current = name;
       memoizedInitialValue.current = initialValue;
     }
@@ -57,8 +57,8 @@ export function Field<FF extends FormFields, F extends keyof FF>({
   }, [focusField, name]);
 
   const change = useCallback(
-    (modifier: FieldModifier<FF[F]>) => {
-      changeField<F>(name, modifier, onChange);
+    (modifier: FieldModifier<V>) => {
+      changeField(name, modifier, onChange);
     },
     [changeField, name, onChange],
   );
@@ -71,9 +71,9 @@ export function Field<FF extends FormFields, F extends keyof FF>({
     return null;
   }
 
-  const field = (formState.fields as { [key: string]: FieldState | undefined })[name] as FieldState<
-    FF[F]
-  >;
+  const field = (formState.fields as { [key: string]: FieldState | undefined })[
+    name
+  ] as FieldState<V>;
 
   const props = {
     ...customProps,

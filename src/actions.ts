@@ -21,7 +21,7 @@ function parseError(error: Error | string): string {
   return error;
 }
 
-function checkFormFields<FF = FormFields>(
+function checkFormFields<FF extends FormFields = FormFields>(
   values?: Partial<FF>,
   validate?: FormValidationFunction<FF>,
 ): FormErrors<FF> | undefined {
@@ -48,7 +48,7 @@ function checkFormFields<FF = FormFields>(
   }
 }
 
-function dispatchErrors<FF = FormFields>(
+function dispatchErrors<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   errors: FormErrors<FF>,
 ): FormState<FF> {
@@ -76,7 +76,7 @@ function dispatchErrors<FF = FormFields>(
   return nextState;
 }
 
-function dispatchWarnings<FF = FormFields>(
+function dispatchWarnings<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   warnings: FormErrors<FF>,
 ): FormState<FF> {
@@ -104,7 +104,9 @@ function dispatchWarnings<FF = FormFields>(
   return nextState;
 }
 
-function checkFieldChanges<FF = FormFields>(state: FormState<FF>): FormState<FF> {
+function checkFieldChanges<FF extends FormFields = FormFields>(
+  state: FormState<FF>,
+): FormState<FF> {
   return {
     ...state,
     hasChanged: Object.values<FieldState>(state.fields as { [key in keyof FF]: FieldState }).reduce(
@@ -114,7 +116,7 @@ function checkFieldChanges<FF = FormFields>(state: FormState<FF>): FormState<FF>
   };
 }
 
-function validateForm<FF = FormFields>(
+function validateForm<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   validate?: FormValidationFunction<FF>,
   warn?: FormValidationFunction<FF>,
@@ -151,7 +153,7 @@ function validateForm<FF = FormFields>(
   return nextState;
 }
 
-export function getSafeName<FF = FormFields>(name: keyof FF): string {
+export function getSafeName<FF extends FormFields = FormFields>(name: keyof FF): string {
   if (typeof name === 'number') {
     return name.toString(10);
   }
@@ -161,7 +163,7 @@ export function getSafeName<FF = FormFields>(name: keyof FF): string {
   return name;
 }
 
-export function mountFieldAction<FF = FormFields, V = unknown>(
+export function mountFieldAction<FF extends FormFields = FormFields, V = unknown>(
   state: FormState<FF>,
   name: keyof FF,
   initialValue: V,
@@ -210,7 +212,7 @@ export function mountFieldAction<FF = FormFields, V = unknown>(
   return checkFieldChanges<FF>(validateForm<FF>(nextState, validate, warn));
 }
 
-export function focusFieldAction<FF = FormFields>(
+export function focusFieldAction<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
 ): FormState<FF> {
@@ -243,7 +245,7 @@ export function focusFieldAction<FF = FormFields>(
   return nextState;
 }
 
-export function changeFieldAction<V = unknown, FF = FormFields>(
+export function changeFieldAction<V = unknown, FF extends FormFields = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
   modifier: FieldModifier<V>,
@@ -344,7 +346,7 @@ export function changeFieldAction<V = unknown, FF = FormFields>(
   );
 }
 
-export function blurFieldAction<FF = FormFields>(
+export function blurFieldAction<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
   liveValidation?: boolean,
@@ -378,7 +380,7 @@ export function blurFieldAction<FF = FormFields>(
   return liveValidation ? nextState : validateForm<FF>(nextState, validate, warn);
 }
 
-export function resetFieldAction<FF = FormFields>(
+export function resetFieldAction<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   name: keyof FF,
   onChange?: FormSubmitFunction<FF>,
@@ -435,7 +437,7 @@ export function resetFieldAction<FF = FormFields>(
   );
 }
 
-export function resetFormAction<FF = FormFields>(
+export function resetFormAction<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   onChange?: FormSubmitFunction<FF>,
   validate?: FormValidationFunction<FF>,
@@ -485,7 +487,9 @@ export function resetFormAction<FF = FormFields>(
   return liveValidation ? validateForm<FF>(nextState, validate, warn) : nextState;
 }
 
-export function startSubmitAction<FF = FormFields>(state: FormState<FF>): FormState<FF> {
+export function startSubmitAction<FF extends FormFields = FormFields>(
+  state: FormState<FF>,
+): FormState<FF> {
   const nextState = {
     ...state,
     isSubmitting: true,
@@ -513,7 +517,7 @@ export function startSubmitAction<FF = FormFields>(state: FormState<FF>): FormSt
   return nextState;
 }
 
-function parseSubmitErrors<FF = FormFields>(
+function parseSubmitErrors<FF extends FormFields = FormFields>(
   errors: FormSubmitError | FormErrors | Error | string,
 ): FormErrors<FF> {
   if (!errors) {
@@ -534,7 +538,7 @@ function parseSubmitErrors<FF = FormFields>(
   return { _global: 'Unknown error' };
 }
 
-export function failSubmitAction<FF = FormFields>(
+export function failSubmitAction<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   submitErrors: FormSubmitError<FF> | FormErrors<FF> | Error | string,
 ): FormState<FF> {
@@ -552,7 +556,7 @@ export function failSubmitAction<FF = FormFields>(
   return nextState;
 }
 
-export async function submitAction<FF = FormFields>(
+export async function submitAction<FF extends FormFields = FormFields>(
   state: FormState<FF>,
   onSubmit?: FormSubmitFunction<FF>,
   validate?: FormValidationFunction<FF>,

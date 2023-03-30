@@ -31,7 +31,7 @@ import {
   failSubmitAction,
 } from './actions';
 
-export interface FormProps<FF = FormFields> {
+export interface FormProps<FF extends FormFields = FormFields> {
   onSubmit?: FormSubmitFunction<FF>;
   onChange?: FormSubmitFunction<FF>;
   validate?: FormValidationFunction<FF>;
@@ -41,7 +41,7 @@ export interface FormProps<FF = FormFields> {
   children?: ReactNode;
 }
 
-export const Form = forwardRef(function Form<FF = FormFields>(
+export const Form = forwardRef(function Form<FF extends FormFields = FormFields>(
   {
     onSubmit,
     onChange,
@@ -159,8 +159,8 @@ export const Form = forwardRef(function Form<FF = FormFields>(
       )}
     </formContext.Provider>
   );
-}) as <F = FormFields>(
-  props: FormProps<F> & {
-    ref?: Ref<FormContext<F>>;
+}) as <FF extends FormFields = FormFields>(
+  props: FormProps<FF> & {
+    ref?: Ref<FormContext<FF>>;
   },
 ) => ReactElement;
