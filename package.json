@@ -2,7 +2,7 @@
   "name": "@cezembre/forms",
   "type": "module",
   "author": "Lucien Perouze",
-  "version": "1.7.9",
+  "version": "1.7.10",
   "license": "MIT",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
