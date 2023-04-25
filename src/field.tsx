@@ -17,7 +17,6 @@ export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFi
   onFocus: () => void;
   onChange: (modifier: FieldModifier<V>) => void;
   onBlur: () => void;
-  [key: string]: unknown; // Custom Props
 }
 
 export interface FieldProps<V = unknown, FF extends FormFields = FormFields> {
