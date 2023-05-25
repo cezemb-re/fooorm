@@ -253,7 +253,7 @@ export function changeFieldAction<V = unknown, FF extends FormFields = FormField
   liveValidation?: boolean,
   validate?: FormValidationFunction<FF>,
   warn?: FormValidationFunction<FF>,
-  onChangeField?: (value: V) => void,
+  onChangeField?: (value?: V) => void,
 ): FormState<FF> {
   const nextState: FormState<FF> = { ...state };
 
@@ -269,7 +269,7 @@ export function changeFieldAction<V = unknown, FF extends FormFields = FormField
     throw new Error('Field not found');
   }
 
-  let value: V;
+  let value: V | undefined;
   if (
     typeof modifier === 'object' &&
     modifier &&

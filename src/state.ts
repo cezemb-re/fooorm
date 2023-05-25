@@ -1,8 +1,12 @@
 import { ChangeEvent, Context, createContext, SyntheticEvent, useContext } from 'react';
 
-export type FieldModifierFunction<V> = (oldValue?: V) => V;
+export type FieldModifierFunction<V> = (oldValue?: V) => V | undefined;
 
-export type FieldModifier<V = unknown> = V | ChangeEvent<{ value: V }> | FieldModifierFunction<V>;
+export type FieldModifier<V = unknown> =
+  | V
+  | ChangeEvent<{ value: V }>
+  | FieldModifierFunction<V>
+  | undefined;
 
 export type FieldValidationFunction = (value: unknown) => Error | string | null | void;
 
