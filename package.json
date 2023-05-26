@@ -1,7 +1,7 @@
 {
   "name": "@cezembre/forms",
   "author": "Lucien Perouze",
-  "version": "1.7.13",
+  "version": "1.7.14",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
