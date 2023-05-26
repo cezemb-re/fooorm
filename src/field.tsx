@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  HTMLInputTypeAttribute,
 } from 'react';
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FormFields, FieldModifier } from './state';
@@ -26,6 +27,7 @@ export interface FieldProps<V = unknown, P = unknown, FF extends FormFields = Fo
   component?: ComponentType<FieldComponentProps<V, FF> & P> | string;
   onChange?: (value: V) => void;
   children?: ReactNode;
+  type?: HTMLInputTypeAttribute;
 }
 
 export function Field<V = unknown, P = unknown, FF extends FormFields = FormFields>({
