@@ -36,7 +36,7 @@ export function Field<V = unknown, P = unknown, FF extends FormFields = FormFiel
   onChange,
   children,
   ...customProps
-}: FieldProps<V, P, FF> & P): ReactElement | null {
+}: FieldProps<V, P, FF> & Omit<P, keyof FieldComponentProps>): ReactElement | null {
   const memoizedName = useRef<keyof FF>();
   const memoizedInitialValue = useRef<V>();
 
