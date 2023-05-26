@@ -19,17 +19,16 @@ export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFi
   onBlur: () => void;
 }
 
-export interface FieldProps<V = unknown, FF extends FormFields = FormFields> {
+export interface FieldProps<V = unknown, P = unknown, FF extends FormFields = FormFields> {
   name: keyof FF;
   initialValue?: V;
   element?: ReactElement;
-  component?: ComponentType<FieldComponentProps<V, FF>> | string;
+  component?: ComponentType<FieldComponentProps<V, FF> & P> | string;
   onChange?: (value: V) => void;
   children?: ReactNode;
-  [key: string]: unknown;
 }
 
-export function Field<V = unknown, FF extends FormFields = FormFields>({
+export function Field<V = unknown, P = unknown, FF extends FormFields = FormFields>({
   name,
   initialValue,
   element,
@@ -37,7 +36,7 @@ export function Field<V = unknown, FF extends FormFields = FormFields>({
   onChange,
   children,
   ...customProps
-}: FieldProps<V, FF>): ReactElement | null {
+}: FieldProps<V, P, FF> & P): ReactElement | null {
   const memoizedName = useRef<keyof FF>();
   const memoizedInitialValue = useRef<V>();
 
@@ -74,14 +73,14 @@ export function Field<V = unknown, FF extends FormFields = FormFields>({
     name
   ] as FieldState<V>;
 
-  const props = {
+  const props: FieldComponentProps<V, FF> & P = {
     ...customProps,
     ...field,
     form: formState,
     onFocus,
     onChange: change,
     onBlur,
-  };
+  } as FieldComponentProps<V, FF> & P;
 
   if (element) {
     return cloneElement(element, props, children);
