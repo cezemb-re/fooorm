@@ -5,7 +5,6 @@ import {
   Fields,
   FieldState,
   FormErrors,
-  FormFields,
   FormState,
   FormSubmitError,
   FormSubmitFunction,
@@ -21,10 +20,10 @@ function parseError(error: Error | string): string {
   return error;
 }
 
-function checkFormFields<FF extends FormFields = FormFields>(
-  values?: Partial<FF>,
-  validate?: FormValidationFunction<FF>,
-): FormErrors<FF> | undefined {
+function checkFormFields<F = unknown>(
+  values?: Partial<F>,
+  validate?: FormValidationFunction<F>,
+): FormErrors<F> | undefined {
   if (!values || !validate) {
     return undefined;
   }
@@ -48,11 +47,8 @@ function checkFormFields<FF extends FormFields = FormFields>(
   }
 }
 
-function dispatchErrors<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  errors: FormErrors<FF>,
-): FormState<FF> {
-  const nextState: FormState<FF> = { ...state, errors };
+function dispatchErrors<F = unknown>(state: FormState<F>, errors: FormErrors<F>): FormState<F> {
+  const nextState: FormState<F> = { ...state, errors };
 
   Object.entries(errors).forEach(([field, error]: [string, string | undefined]) => {
     if (!error || !nextState.errors) {
@@ -76,11 +72,8 @@ function dispatchErrors<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-function dispatchWarnings<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  warnings: FormErrors<FF>,
-): FormState<FF> {
-  const nextState: FormState<FF> = { ...state, warnings };
+function dispatchWarnings<F = unknown>(state: FormState<F>, warnings: FormErrors<F>): FormState<F> {
+  const nextState: FormState<F> = { ...state, warnings };
 
   Object.entries(warnings).forEach(([field, warning]: [string, string | undefined]) => {
     if (!warning || !nextState.warnings) {
@@ -104,24 +97,22 @@ function dispatchWarnings<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-function checkFieldChanges<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-): FormState<FF> {
+function checkFieldChanges<F = unknown>(state: FormState<F>): FormState<F> {
   return {
     ...state,
-    hasChanged: Object.values<FieldState>(state.fields as { [key in keyof FF]: FieldState }).reduce(
+    hasChanged: Object.values<FieldState>(state.fields as { [key in keyof F]: FieldState }).reduce(
       (hasChanged: boolean, field: FieldState) => field.hasChanged || hasChanged,
       false,
     ),
   };
 }
 
-function validateForm<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  validate?: FormValidationFunction<FF>,
-  warn?: FormValidationFunction<FF>,
-): FormState<FF> {
-  let nextState: FormState<FF> = {
+function validateForm<F = unknown>(
+  state: FormState<F>,
+  validate?: FormValidationFunction<F>,
+  warn?: FormValidationFunction<F>,
+): FormState<F> {
+  let nextState: FormState<F> = {
     ...state,
     errors: undefined,
     error: undefined,
@@ -131,18 +122,18 @@ function validateForm<FF extends FormFields = FormFields>(
   };
 
   if (validate) {
-    const errors = checkFormFields<FF>(state.values, validate);
+    const errors = checkFormFields<F>(state.values, validate);
 
     if (errors) {
-      nextState = dispatchErrors<FF>(nextState, errors);
+      nextState = dispatchErrors<F>(nextState, errors);
     }
   }
 
   if (warn) {
-    const warnings = checkFormFields<FF>(state.values, warn);
+    const warnings = checkFormFields<F>(state.values, warn);
 
     if (warnings) {
-      nextState = dispatchWarnings<FF>(nextState, warnings);
+      nextState = dispatchWarnings<F>(nextState, warnings);
     }
   }
 
@@ -153,7 +144,7 @@ function validateForm<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-export function getSafeName<FF extends FormFields = FormFields>(name: keyof FF): string {
+export function getSafeName<F = unknown>(name: keyof F): string {
   if (typeof name === 'number') {
     return name.toString(10);
   }
@@ -163,18 +154,18 @@ export function getSafeName<FF extends FormFields = FormFields>(name: keyof FF):
   return name;
 }
 
-export function mountFieldAction<FF extends FormFields = FormFields, V = unknown>(
-  state: FormState<FF>,
-  name: keyof FF,
+export function mountFieldAction<F = unknown, V = unknown>(
+  state: FormState<F>,
+  name: keyof F,
   initialValue: V,
-  validate?: FormValidationFunction<FF>,
-  warn?: FormValidationFunction<FF>,
-): FormState<FF> {
-  const nextState: FormState<FF> = {
+  validate?: FormValidationFunction<F>,
+  warn?: FormValidationFunction<F>,
+): FormState<F> {
+  const nextState: FormState<F> = {
     ...state,
   };
 
-  const safeName = getSafeName<FF>(name);
+  const safeName = getSafeName<F>(name);
 
   const field: FieldState<V> = {
     ...getDefaultFieldState<V>(),
@@ -209,20 +200,17 @@ export function mountFieldAction<FF extends FormFields = FormFields, V = unknown
     writable: true,
   });
 
-  return checkFieldChanges<FF>(validateForm<FF>(nextState, validate, warn));
+  return checkFieldChanges<F>(validateForm<F>(nextState, validate, warn));
 }
 
-export function focusFieldAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  name: keyof FF,
-): FormState<FF> {
-  const nextState: FormState<FF> = { ...state };
+export function focusFieldAction<F = unknown>(state: FormState<F>, name: keyof F): FormState<F> {
+  const nextState: FormState<F> = { ...state };
 
   if (!nextState.fields) {
     throw new Error('No fields !');
   }
 
-  const safeName = getSafeName<FF>(name);
+  const safeName = getSafeName<F>(name);
 
   if (!(nextState.fields as { [key: string]: FieldState | undefined })[safeName]) {
     throw new Error('Field not found');
@@ -245,23 +233,23 @@ export function focusFieldAction<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-export function changeFieldAction<V = unknown, FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  name: keyof FF,
+export function changeFieldAction<V = unknown, F = unknown>(
+  state: FormState<F>,
+  name: keyof F,
   modifier: FieldModifier<V>,
-  onChange?: FormSubmitFunction<FF>,
+  onChange?: FormSubmitFunction<F>,
   liveValidation?: boolean,
-  validate?: FormValidationFunction<FF>,
-  warn?: FormValidationFunction<FF>,
+  validate?: FormValidationFunction<F>,
+  warn?: FormValidationFunction<F>,
   onChangeField?: (value?: V) => void,
-): FormState<FF> {
-  const nextState: FormState<FF> = { ...state };
+): FormState<F> {
+  const nextState: FormState<F> = { ...state };
 
   if (!nextState.fields) {
     throw new Error('No fields !');
   }
 
-  const safeName = getSafeName<FF>(name);
+  const safeName = getSafeName<F>(name);
 
   const field = (nextState.fields as { [key: string]: FieldState<V> | undefined })[safeName];
 
@@ -338,28 +326,28 @@ export function changeFieldAction<V = unknown, FF extends FormFields = FormField
   });
 
   if (onChange) {
-    onChange(nextState.values as FF, nextState.changes as Partial<FF>);
+    onChange(nextState.values as F, nextState.changes as Partial<F>);
   }
 
-  return checkFieldChanges<FF>(
-    liveValidation ? validateForm<FF>(nextState, validate, warn) : nextState,
+  return checkFieldChanges<F>(
+    liveValidation ? validateForm<F>(nextState, validate, warn) : nextState,
   );
 }
 
-export function blurFieldAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  name: keyof FF,
+export function blurFieldAction<F = unknown>(
+  state: FormState<F>,
+  name: keyof F,
   liveValidation?: boolean,
-  validate?: FormValidationFunction<FF>,
-  warn?: FormValidationFunction<FF>,
-): FormState<FF> {
-  const nextState: FormState<FF> = { ...state };
+  validate?: FormValidationFunction<F>,
+  warn?: FormValidationFunction<F>,
+): FormState<F> {
+  const nextState: FormState<F> = { ...state };
 
   if (!nextState.fields) {
     throw new Error('No fields !');
   }
 
-  const safeName = getSafeName<FF>(name);
+  const safeName = getSafeName<F>(name);
 
   if (!(nextState.fields as { [key: string]: FieldState | undefined })[safeName]) {
     throw new Error('Field not found');
@@ -377,24 +365,24 @@ export function blurFieldAction<FF extends FormFields = FormFields>(
     writable: true,
   });
 
-  return liveValidation ? nextState : validateForm<FF>(nextState, validate, warn);
+  return liveValidation ? nextState : validateForm<F>(nextState, validate, warn);
 }
 
-export function resetFieldAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  name: keyof FF,
-  onChange?: FormSubmitFunction<FF>,
+export function resetFieldAction<F = unknown>(
+  state: FormState<F>,
+  name: keyof F,
+  onChange?: FormSubmitFunction<F>,
   liveValidation?: boolean,
-  validate?: FormValidationFunction<FF>,
-  warn?: FormValidationFunction<FF>,
-): FormState<FF> {
-  const nextState: FormState<FF> = { ...state };
+  validate?: FormValidationFunction<F>,
+  warn?: FormValidationFunction<F>,
+): FormState<F> {
+  const nextState: FormState<F> = { ...state };
 
   if (!nextState.fields) {
     throw new Error('No fields !');
   }
 
-  const safeName = getSafeName<FF>(name);
+  const safeName = getSafeName<F>(name);
 
   const field = (nextState.fields as { [key: string]: FieldState | undefined })[safeName];
 
@@ -409,7 +397,7 @@ export function resetFieldAction<FF extends FormFields = FormFields>(
   Object.defineProperty<Fields>(nextState.fields, safeName, {
     value: {
       ...field,
-      ...getDefaultFieldState<FF>(),
+      ...getDefaultFieldState<F>(),
       value: field.initialValue,
     },
     configurable: true,
@@ -429,24 +417,24 @@ export function resetFieldAction<FF extends FormFields = FormFields>(
   });
 
   if (onChange) {
-    onChange(nextState.values as FF, nextState.changes as Partial<FF>);
+    onChange(nextState.values as F, nextState.changes as Partial<F>);
   }
 
-  return checkFieldChanges<FF>(
-    liveValidation ? validateForm<FF>(nextState, validate, warn) : nextState,
+  return checkFieldChanges<F>(
+    liveValidation ? validateForm<F>(nextState, validate, warn) : nextState,
   );
 }
 
-export function resetFormAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  onChange?: FormSubmitFunction<FF>,
-  validate?: FormValidationFunction<FF>,
-  warn?: FormValidationFunction<FF>,
+export function resetFormAction<F = unknown>(
+  state: FormState<F>,
+  onChange?: FormSubmitFunction<F>,
+  validate?: FormValidationFunction<F>,
+  warn?: FormValidationFunction<F>,
   liveValidation?: boolean,
-): FormState<FF> {
-  const nextState: FormState<FF> = {
+): FormState<F> {
+  const nextState: FormState<F> = {
     ...state,
-    ...getDefaultFormState<FF>(),
+    ...getDefaultFormState<F>(),
   };
 
   if (nextState.fields) {
@@ -463,7 +451,7 @@ export function resetFormAction<FF extends FormFields = FormFields>(
         Object.defineProperty<Fields>(nextState.fields, name, {
           value: {
             ...field,
-            ...getDefaultFieldState<FF>(),
+            ...getDefaultFieldState<F>(),
             value: field.initialValue,
           },
           configurable: true,
@@ -481,15 +469,13 @@ export function resetFormAction<FF extends FormFields = FormFields>(
   delete nextState.changes;
 
   if (onChange) {
-    onChange(nextState.values as FF);
+    onChange(nextState.values as F);
   }
 
-  return liveValidation ? validateForm<FF>(nextState, validate, warn) : nextState;
+  return liveValidation ? validateForm<F>(nextState, validate, warn) : nextState;
 }
 
-export function startSubmitAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-): FormState<FF> {
+export function startSubmitAction<F = unknown>(state: FormState<F>): FormState<F> {
   const nextState = {
     ...state,
     isSubmitting: true,
@@ -517,14 +503,14 @@ export function startSubmitAction<FF extends FormFields = FormFields>(
   return nextState;
 }
 
-function parseSubmitErrors<FF extends FormFields = FormFields>(
+function parseSubmitErrors<F = unknown>(
   errors: FormSubmitError | FormErrors | Error | string,
-): FormErrors<FF> {
+): FormErrors<F> {
   if (!errors) {
     return {};
   }
   if (typeof errors === 'object' && 'submitErrors' in errors && errors.submitErrors) {
-    return errors.submitErrors as FormErrors<FF>;
+    return errors.submitErrors as FormErrors<F>;
   }
   if (errors instanceof Error && errors) {
     return { _global: errors.message };
@@ -533,46 +519,46 @@ function parseSubmitErrors<FF extends FormFields = FormFields>(
     return { _global: errors };
   }
   if (typeof errors === 'object' && errors) {
-    return errors as FormErrors<FF>;
+    return errors as FormErrors<F>;
   }
   return { _global: 'Unknown error' };
 }
 
-export function failSubmitAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  submitErrors: FormSubmitError<FF> | FormErrors<FF> | Error | string,
-): FormState<FF> {
-  const errors = parseSubmitErrors<FF>(submitErrors);
+export function failSubmitAction<F = unknown>(
+  state: FormState<F>,
+  submitErrors: FormSubmitError<F> | FormErrors<F> | Error | string,
+): FormState<F> {
+  const errors = parseSubmitErrors<F>(submitErrors);
 
-  let nextState: FormState<FF> = {
+  let nextState: FormState<F> = {
     ...state,
     isSubmitting: false,
     submitSucceeded: false,
     submitFailed: true,
   };
 
-  nextState = dispatchErrors<FF>(nextState, errors);
+  nextState = dispatchErrors<F>(nextState, errors);
 
   return nextState;
 }
 
-export async function submitAction<FF extends FormFields = FormFields>(
-  state: FormState<FF>,
-  onSubmit?: FormSubmitFunction<FF>,
-  validate?: FormValidationFunction<FF>,
-): Promise<FormState<FF>> {
-  const nextState: FormState<FF> = { ...state };
+export async function submitAction<F = unknown>(
+  state: FormState<F>,
+  onSubmit?: FormSubmitFunction<F>,
+  validate?: FormValidationFunction<F>,
+): Promise<FormState<F>> {
+  const nextState: FormState<F> = { ...state };
 
   if (validate) {
-    const errors = checkFormFields<FF>(nextState.values, validate);
+    const errors = checkFormFields<F>(nextState.values, validate);
 
     if (errors && Object.values(errors).length) {
-      return failSubmitAction<FF>(nextState, errors);
+      return failSubmitAction<F>(nextState, errors);
     }
   }
 
   if (onSubmit) {
-    const result = onSubmit(nextState.values as FF, nextState.changes);
+    const result = onSubmit(nextState.values as F, nextState.changes);
 
     if (result instanceof Promise) {
       await result;

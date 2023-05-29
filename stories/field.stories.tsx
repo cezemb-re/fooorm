@@ -10,13 +10,17 @@ export default {
   argTypes: {},
 };
 
+interface Fields {
+  test: string;
+}
+
 function onSubmit() {
-  throw new FormSubmitError({ test: 'test' });
+  throw new FormSubmitError<Fields>({ test: 'test' });
 }
 
 function Template({ type }: Props) {
   return (
-    <Form onSubmit={onSubmit}>
+    <Form<Fields> onSubmit={onSubmit}>
       <Field name="test" />
       <button type="submit">Submit</button>
     </Form>

@@ -33,20 +33,16 @@ export function getDefaultFieldState<V = unknown>(): FieldState<V> {
   };
 }
 
-export interface FormFields {
-  [key: string]: unknown;
-}
-
-export type FormErrors<FF extends FormFields = FormFields> = {
-  [key in keyof FF]?: string;
+export type FormErrors<F = unknown> = {
+  [key in keyof F]?: string;
 } & { _global?: string };
 
-export class FormSubmitError<FF extends FormFields = FormFields> extends Error {
+export class FormSubmitError<F = unknown> extends Error {
   readonly __FLAG__: 'FormSubmitError';
 
-  submitErrors: FormErrors<FF> | null;
+  submitErrors: FormErrors<F> | null;
 
-  constructor(errors: string | FormErrors) {
+  constructor(errors: string | FormErrors<F>) {
     super(typeof errors === 'string' ? errors : 'Unknown error');
     this.submitErrors = typeof errors === 'string' ? { _global: errors } : errors;
     this.__FLAG__ = 'FormSubmitError';
@@ -64,18 +60,15 @@ export function isFormSubmitError(error: unknown): boolean {
   );
 }
 
-export type FormValidationFunction<FF extends FormFields = FormFields> = (
-  values: Partial<FF>,
-) => FormErrors<FF> | Error | string | null | void;
+export type FormValidationFunction<F = unknown> = (
+  values: Partial<F>,
+) => FormErrors<F> | Error | string | null | void;
 
-export type FormSubmitFunction<FF extends FormFields = FormFields> = (
-  values: FF,
-  changes?: Partial<FF>,
-) => unknown;
+export type FormSubmitFunction<F = unknown> = (values: F, changes?: Partial<F>) => unknown;
 
-export type Fields<FF extends FormFields = FormFields> = { [key in keyof FF]?: FieldState };
+export type Fields<F = unknown> = { [key in keyof F]?: FieldState };
 
-export interface FormState<FF extends FormFields = FormFields> {
+export interface FormState<F = unknown> {
   hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
@@ -84,16 +77,16 @@ export interface FormState<FF extends FormFields = FormFields> {
   submitCounter: number;
   submitSucceeded?: boolean;
   submitFailed?: boolean;
-  values?: Partial<FF>;
-  changes?: Partial<FF>;
-  fields?: Fields<FF>;
-  errors?: FormErrors<FF>;
+  values?: Partial<F>;
+  changes?: Partial<F>;
+  fields?: Fields<F>;
+  errors?: FormErrors<F>;
   error?: string;
   warning?: string;
-  warnings?: FormErrors<FF>;
+  warnings?: FormErrors<F>;
 }
 
-export function getDefaultFormState<FF extends FormFields = FormFields>(): FormState<FF> {
+export function getDefaultFormState<F = unknown>(): FormState<F> {
   return {
     hasChanged: false,
     isValid: true,
@@ -104,31 +97,31 @@ export function getDefaultFormState<FF extends FormFields = FormFields>(): FormS
   };
 }
 
-export interface FormContext<FF extends FormFields = FormFields> {
-  formState: FormState<FF>;
-  mountField<F extends keyof FF>(
-    name: keyof FF,
-    initialValue?: FF[F],
+export interface FormContext<F = unknown> {
+  formState: FormState<F>;
+  mountField<N extends keyof F>(
+    name: keyof F,
+    initialValue?: F[N],
     validateField?: FieldValidationFunction,
     warnField?: FieldValidationFunction,
   ): void;
-  focusField(name: keyof FF): void;
+  focusField(name: keyof F): void;
   changeField<V = unknown>(
-    name: keyof FF,
+    name: keyof F,
     modifier: FieldModifier<V>,
     onChange?: (value: V) => void,
   ): void;
-  blurField(name: keyof FF): void;
-  resetField(name: keyof FF): void;
+  blurField(name: keyof F): void;
+  resetField(name: keyof F): void;
   submitForm(event?: SyntheticEvent): unknown;
   resetForm(): void;
 }
 
 export const formContext = createContext<FormContext | undefined>(undefined);
 
-export function useFormContext<FF extends FormFields = FormFields>(): FormContext<FF> {
-  const context = useContext<FormContext<FF> | undefined>(
-    formContext as Context<FormContext<FF> | undefined>,
+export function useFormContext<F = unknown>(): FormContext<F> {
+  const context = useContext<FormContext<F> | undefined>(
+    formContext as Context<FormContext<F> | undefined>,
   );
   if (!context) {
     throw new Error('Missing form context');

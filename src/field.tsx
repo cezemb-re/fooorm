@@ -10,27 +10,26 @@ import {
   HTMLInputTypeAttribute,
 } from 'react';
 import isEqual from 'lodash.isequal';
-import { FieldState, FormState, useFormContext, FormFields, FieldModifier } from './state';
+import { FieldState, FormState, useFormContext, FieldModifier } from './state';
 
-export interface FieldComponentProps<V = unknown, FF extends FormFields = FormFields>
-  extends Partial<FieldState<V>> {
-  form: FormState<FF>;
+export interface FieldComponentProps<V = unknown, F = unknown> extends Partial<FieldState<V>> {
+  form: FormState<F>;
   onFocus: () => void;
   onChange: (modifier: FieldModifier<V>) => void;
   onBlur: () => void;
 }
 
-export interface FieldProps<V = unknown, P = unknown, FF extends FormFields = FormFields> {
-  name: keyof FF;
+export interface FieldProps<V = unknown, P = unknown, F = unknown> {
+  name: keyof F;
   initialValue?: V;
   element?: ReactElement;
-  component?: ComponentType<FieldComponentProps<V, FF> & P> | string;
+  component?: ComponentType<FieldComponentProps<V, F> & P> | string;
   onChange?: (value: V) => void;
   children?: ReactNode;
   type?: HTMLInputTypeAttribute;
 }
 
-export function Field<V = unknown, P = unknown, FF extends FormFields = FormFields>({
+export function Field<V = unknown, P = unknown, F = unknown>({
   name,
   initialValue,
   element,
@@ -38,15 +37,15 @@ export function Field<V = unknown, P = unknown, FF extends FormFields = FormFiel
   onChange,
   children,
   ...customProps
-}: FieldProps<V, P, FF> & Omit<P, keyof FieldComponentProps>): ReactElement | null {
-  const memoizedName = useRef<keyof FF>();
+}: FieldProps<V, P, F> & Omit<P, keyof FieldComponentProps>): ReactElement | null {
+  const memoizedName = useRef<keyof F>();
   const memoizedInitialValue = useRef<V>();
 
-  const { formState, mountField, focusField, changeField, blurField } = useFormContext<FF>();
+  const { formState, mountField, focusField, changeField, blurField } = useFormContext<F>();
 
   useEffect(() => {
     if (memoizedName.current !== name || !isEqual(memoizedInitialValue.current, initialValue)) {
-      mountField(name, initialValue as FF[keyof FF]);
+      mountField(name, initialValue as F[keyof F]);
       memoizedName.current = name;
       memoizedInitialValue.current = initialValue;
     }
@@ -75,14 +74,14 @@ export function Field<V = unknown, P = unknown, FF extends FormFields = FormFiel
     name
   ] as FieldState<V>;
 
-  const props: FieldComponentProps<V, FF> & P = {
+  const props: FieldComponentProps<V, F> & P = {
     ...customProps,
     ...field,
     form: formState,
     onFocus,
     onChange: change,
     onBlur,
-  } as FieldComponentProps<V, FF> & P;
+  } as FieldComponentProps<V, F> & P;
 
   if (element) {
     return cloneElement(element, props, children);
