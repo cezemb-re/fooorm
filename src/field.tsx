@@ -12,7 +12,7 @@ import {
 import isEqual from 'lodash.isequal';
 import { FieldState, FormState, useFormContext, FieldModifier } from './state';
 
-export interface FieldComponentProps<V = unknown, F = Record<string, unknown>>
+export interface FieldComponentProps<V = unknown, F extends object = Record<string, unknown>>
   extends Partial<FieldState<V>> {
   form: FormState<F>;
   onFocus: () => void;
@@ -20,7 +20,7 @@ export interface FieldComponentProps<V = unknown, F = Record<string, unknown>>
   onBlur: () => void;
 }
 
-export interface FieldProps<V = unknown, P = unknown, F = Record<string, unknown>> {
+export interface FieldProps<V = unknown, P = unknown, F extends object = Record<string, unknown>> {
   name: keyof F;
   initialValue?: V;
   element?: ReactElement;
@@ -30,7 +30,7 @@ export interface FieldProps<V = unknown, P = unknown, F = Record<string, unknown
   type?: HTMLInputTypeAttribute;
 }
 
-export function Field<V = unknown, P = unknown, F = Record<string, unknown>>({
+export function Field<V = unknown, P = unknown, F extends object = Record<string, unknown>>({
   name,
   initialValue,
   element,

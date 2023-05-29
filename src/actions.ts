@@ -20,7 +20,7 @@ function parseError(error: Error | string): string {
   return error;
 }
 
-function checkFormFields<F = Record<string, unknown>>(
+function checkFormFields<F extends object = Record<string, unknown>>(
   values?: Partial<F>,
   validate?: FormValidationFunction<F>,
 ): FormErrors<F> | undefined {
@@ -47,7 +47,7 @@ function checkFormFields<F = Record<string, unknown>>(
   }
 }
 
-function dispatchErrors<F = Record<string, unknown>>(
+function dispatchErrors<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   errors: FormErrors<F>,
 ): FormState<F> {
@@ -75,7 +75,7 @@ function dispatchErrors<F = Record<string, unknown>>(
   return nextState;
 }
 
-function dispatchWarnings<F = Record<string, unknown>>(
+function dispatchWarnings<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   warnings: FormErrors<F>,
 ): FormState<F> {
@@ -103,7 +103,9 @@ function dispatchWarnings<F = Record<string, unknown>>(
   return nextState;
 }
 
-function checkFieldChanges<F = Record<string, unknown>>(state: FormState<F>): FormState<F> {
+function checkFieldChanges<F extends object = Record<string, unknown>>(
+  state: FormState<F>,
+): FormState<F> {
   return {
     ...state,
     hasChanged: Object.values<FieldState>(state.fields as { [key in keyof F]: FieldState }).reduce(
@@ -113,7 +115,7 @@ function checkFieldChanges<F = Record<string, unknown>>(state: FormState<F>): Fo
   };
 }
 
-function validateForm<F = Record<string, unknown>>(
+function validateForm<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   validate?: FormValidationFunction<F>,
   warn?: FormValidationFunction<F>,
@@ -150,7 +152,7 @@ function validateForm<F = Record<string, unknown>>(
   return nextState;
 }
 
-export function getSafeName<F = Record<string, unknown>>(name: keyof F): string {
+export function getSafeName<F extends object = Record<string, unknown>>(name: keyof F): string {
   if (typeof name === 'number') {
     return name.toString(10);
   }
@@ -160,7 +162,7 @@ export function getSafeName<F = Record<string, unknown>>(name: keyof F): string 
   return name;
 }
 
-export function mountFieldAction<F = Record<string, unknown>, V = unknown>(
+export function mountFieldAction<F extends object = Record<string, unknown>, V = unknown>(
   state: FormState<F>,
   name: keyof F,
   initialValue: V,
@@ -209,7 +211,7 @@ export function mountFieldAction<F = Record<string, unknown>, V = unknown>(
   return checkFieldChanges<F>(validateForm<F>(nextState, validate, warn));
 }
 
-export function focusFieldAction<F = Record<string, unknown>>(
+export function focusFieldAction<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   name: keyof F,
 ): FormState<F> {
@@ -242,7 +244,7 @@ export function focusFieldAction<F = Record<string, unknown>>(
   return nextState;
 }
 
-export function changeFieldAction<V = unknown, F = Record<string, unknown>>(
+export function changeFieldAction<V = unknown, F extends object = Record<string, unknown>>(
   state: FormState<F>,
   name: keyof F,
   modifier: FieldModifier<V>,
@@ -343,7 +345,7 @@ export function changeFieldAction<V = unknown, F = Record<string, unknown>>(
   );
 }
 
-export function blurFieldAction<F = Record<string, unknown>>(
+export function blurFieldAction<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   name: keyof F,
   liveValidation?: boolean,
@@ -377,7 +379,7 @@ export function blurFieldAction<F = Record<string, unknown>>(
   return liveValidation ? nextState : validateForm<F>(nextState, validate, warn);
 }
 
-export function resetFieldAction<F = Record<string, unknown>>(
+export function resetFieldAction<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   name: keyof F,
   onChange?: FormSubmitFunction<F>,
@@ -434,7 +436,7 @@ export function resetFieldAction<F = Record<string, unknown>>(
   );
 }
 
-export function resetFormAction<F = Record<string, unknown>>(
+export function resetFormAction<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   onChange?: FormSubmitFunction<F>,
   validate?: FormValidationFunction<F>,
@@ -484,7 +486,9 @@ export function resetFormAction<F = Record<string, unknown>>(
   return liveValidation ? validateForm<F>(nextState, validate, warn) : nextState;
 }
 
-export function startSubmitAction<F = Record<string, unknown>>(state: FormState<F>): FormState<F> {
+export function startSubmitAction<F extends object = Record<string, unknown>>(
+  state: FormState<F>,
+): FormState<F> {
   const nextState = {
     ...state,
     isSubmitting: true,
@@ -512,7 +516,7 @@ export function startSubmitAction<F = Record<string, unknown>>(state: FormState<
   return nextState;
 }
 
-function parseSubmitErrors<F = Record<string, unknown>>(
+function parseSubmitErrors<F extends object = Record<string, unknown>>(
   errors: FormSubmitError | FormErrors | Error | string,
 ): FormErrors<F> {
   if (!errors) {
@@ -533,7 +537,7 @@ function parseSubmitErrors<F = Record<string, unknown>>(
   return { _global: 'Unknown error' };
 }
 
-export function failSubmitAction<F = Record<string, unknown>>(
+export function failSubmitAction<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   submitErrors: FormSubmitError<F> | FormErrors<F> | Error | string,
 ): FormState<F> {
@@ -551,7 +555,7 @@ export function failSubmitAction<F = Record<string, unknown>>(
   return nextState;
 }
 
-export async function submitAction<F = Record<string, unknown>>(
+export async function submitAction<F extends object = Record<string, unknown>>(
   state: FormState<F>,
   onSubmit?: FormSubmitFunction<F>,
   validate?: FormValidationFunction<F>,

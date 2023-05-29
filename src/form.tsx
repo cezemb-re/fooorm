@@ -30,7 +30,7 @@ import {
   failSubmitAction,
 } from './actions';
 
-export interface FormProps<F = Record<string, unknown>> {
+export interface FormProps<F extends object = Record<string, unknown>> {
   onSubmit?: FormSubmitFunction<F>;
   onChange?: FormSubmitFunction<F>;
   validate?: FormValidationFunction<F>;
@@ -40,7 +40,7 @@ export interface FormProps<F = Record<string, unknown>> {
   children?: ReactNode;
 }
 
-export const Form = forwardRef(function Form<F = Record<string, unknown>>(
+export const Form = forwardRef(function Form<F extends object = Record<string, unknown>>(
   { onSubmit, onChange, validate, warn, liveValidation = false, className, children }: FormProps<F>,
   ref: Ref<FormContext<F>>,
 ): ReactElement {
@@ -150,7 +150,7 @@ export const Form = forwardRef(function Form<F = Record<string, unknown>>(
       )}
     </formContext.Provider>
   );
-}) as <F = Record<string, unknown>>(
+}) as <F extends object = Record<string, unknown>>(
   props: FormProps<F> & {
     ref?: Ref<FormContext<F>>;
   },
