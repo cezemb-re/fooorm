@@ -33,11 +33,11 @@ export function getDefaultFieldState<V = unknown>(): FieldState<V> {
   };
 }
 
-export type FormErrors<F = unknown> = {
+export type FormErrors<F = Record<string, unknown>> = {
   [key in keyof F]?: string;
 } & { _global?: string };
 
-export class FormSubmitError<F = unknown> extends Error {
+export class FormSubmitError<F = Record<string, unknown>> extends Error {
   readonly __FLAG__: 'FormSubmitError';
 
   submitErrors: FormErrors<F> | null;
@@ -60,15 +60,18 @@ export function isFormSubmitError(error: unknown): boolean {
   );
 }
 
-export type FormValidationFunction<F = unknown> = (
+export type FormValidationFunction<F = Record<string, unknown>> = (
   values: Partial<F>,
 ) => FormErrors<F> | Error | string | null | void;
 
-export type FormSubmitFunction<F = unknown> = (values: F, changes?: Partial<F>) => unknown;
+export type FormSubmitFunction<F = Record<string, unknown>> = (
+  values: F,
+  changes?: Partial<F>,
+) => unknown;
 
-export type Fields<F = unknown> = { [key in keyof F]?: FieldState };
+export type Fields<F = Record<string, unknown>> = { [key in keyof F]?: FieldState };
 
-export interface FormState<F = unknown> {
+export interface FormState<F = Record<string, unknown>> {
   hasChanged: boolean;
   isValid: boolean;
   isActive: boolean;
@@ -86,7 +89,7 @@ export interface FormState<F = unknown> {
   warnings?: FormErrors<F>;
 }
 
-export function getDefaultFormState<F = unknown>(): FormState<F> {
+export function getDefaultFormState<F = Record<string, unknown>>(): FormState<F> {
   return {
     hasChanged: false,
     isValid: true,
@@ -97,7 +100,7 @@ export function getDefaultFormState<F = unknown>(): FormState<F> {
   };
 }
 
-export interface FormContext<F = unknown> {
+export interface FormContext<F = Record<string, unknown>> {
   formState: FormState<F>;
   mountField<N extends keyof F>(
     name: keyof F,
@@ -119,7 +122,7 @@ export interface FormContext<F = unknown> {
 
 export const formContext = createContext<FormContext | undefined>(undefined);
 
-export function useFormContext<F = unknown>(): FormContext<F> {
+export function useFormContext<F = Record<string, unknown>>(): FormContext<F> {
   const context = useContext<FormContext<F> | undefined>(
     formContext as Context<FormContext<F> | undefined>,
   );

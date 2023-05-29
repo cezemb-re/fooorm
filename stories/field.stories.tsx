@@ -21,7 +21,7 @@ function onSubmit() {
 function Template({ type }: Props) {
   return (
     <Form<Fields> onSubmit={onSubmit}>
-      <Field name="test" />
+      <Field<string, unknown, Fields> name="test" />
       <button type="submit">Submit</button>
     </Form>
   );
